@@ -4,19 +4,20 @@ import { ListGroup } from "./components/ListGroup"
 import { TableHeader } from "./components/TableHeader"
 import { TableBody } from "./components/TableBody"
 import { Paginator } from "./components/Paginator"
-import load from "./services/api"
+import { loadAll, loadIds } from "./services/api"
 import parseLink from "parse-link-header"
 import { IIssue } from "./types/issue"
+import { OrgRepoInputForm } from "./components/OrgRepoInputForm"
+import { isJSDocNullableType } from "typescript"
 
-const repo = "/Rob--W/cors-anywhere"
-
-let url =
-  "http://localhost:8080/https://api.github.com/repos" + repo + "/issues"
+const API_URL = "https://api.github.com/repos"
+const PAGE_SIZE = 30
 
 const filterGroupItems = [
-  { title: "All Issues", state: "all" },
-  { title: "Open Issues", state: "open" },
-  { title: "Closed Issues", state: "closed" },
+  { title: "All", state: "all" },
+  { title: "Open", state: "open" },
+  { title: "Closed", state: "closed" },
+  { title: "Bookmarked", state: "bookmarked" },
 ]
 
 const sortGroupItems = [
@@ -33,67 +34,101 @@ interface ISortColumn {
   direction: "asc" | "desc"
 }
 
+interface IRepo {
+  name: string
+  org: string
+}
+
+interface IParams {
+  [name: string]: string
+}
+
 function App() {
   const [issueStateFilter, setIssueStateFilter] = React.useState("all")
-  const [sortColumn, setSortColumn] = React.useState<ISortColumn>({
+  const [sortColumnParams, setSortColumnParams] = React.useState<ISortColumn>({
     sort: "created",
     direction: "desc",
   })
   const [activePage, setActivePage] = React.useState(1)
   const [pageIssues, setPageIssues] = React.useState<IIssue[] | []>([])
-  const [bookmarks, setBookmarks] = React.useState<Record<number, boolean>>({})
+  const [bookmarks, setBookmarks] = React.useState<Record<string, boolean>>({})
   const [lastPage, setLastPage] = React.useState<number>(1)
+  const [repository, setRepository] = React.useState<IRepo | null>(null)
 
   const filterOutPullRequests = (issues: {}[]) =>
     issues.filter((issue) => !issue.hasOwnProperty("pull_request"))
 
-  const addSortParams = (
-    url: string,
-    sortColumn: ISortColumn,
-    activePage: number,
-    issueStateFilter: string
-  ): string => {
+  const urlWithParams = (url: string, params: IParams): string => {
     let newUrl = new URL(url)
-    Object.entries(sortColumn).forEach(([key, value]) => {
+    Object.entries(params).forEach(([key, value]) => {
       newUrl.searchParams.set(key, value)
     })
-    newUrl.searchParams.set("state", issueStateFilter)
-    newUrl.searchParams.set("page", activePage.toString())
     return newUrl.toString()
   }
-  React.useEffect(() => {
-    async function fetchMyAPI() {
-      try {
-        const issues = await load<{}[]>(
-          addSortParams(url, sortColumn, activePage, issueStateFilter)
-        )
-        const result = (await issues.data) as IIssue[]
-        setPageIssues(result)
-        const linkObj = parseLink(issues.headers || "")
-        if (linkObj) setLastPage(Number(linkObj.last.page))
-      } catch (error) {
-        console.log(error)
-      }
-    }
-    fetchMyAPI()
-    return
-  }, [activePage, issueStateFilter, sortColumn])
+
+  const urlWithPath = (url: string, repository: IRepo | null) => {
+    return `${url}/${repository?.org}/${repository?.name}/issues`
+  }
+
+  const deps = [activePage, issueStateFilter, sortColumnParams, repository]
 
   React.useEffect(() => {
-    async function fetchMyAPI() {
-      try {
-        const issues = await load<{}[]>(
-          "https://api.github.com/repos/rails/rails/issues"
-        )
-        console.log(filterOutPullRequests(await issues.data))
-        console.log(parseLink(issues.headers || ""))
-      } catch (error) {
-        console.log(error)
-      }
+    const params = {
+      page: activePage.toString(),
+      state: issueStateFilter,
+      ...sortColumnParams,
     }
-    // fetchMyAPI()
+    const url = urlWithPath(API_URL, repository)
+
+    if (!repository) return
+    // function fetchAllIssues(url: string) {
+    // return load<{}[]>(url)
+    // {
+    // const issues = result.data as IIssue[]
+    // return { issues, link }
+    // })
+    // }
+
+    if (issueStateFilter === "bookmarked") {
+      const ids = Object.keys(bookmarks)
+        .filter((key: string) => bookmarks[key])
+        .map((key) => Number(key))
+      loadIds(url, ids)
+        .then((data) => {
+          const pageCount = Math.ceil(data.length / PAGE_SIZE)
+          setLastPage(pageCount)
+          setPageIssues(data)
+        })
+        .catch((error: Error) => console.error(error.message))
+    } else {
+      loadAll(urlWithParams(url, params))
+        .then((result) => {
+          const { data, link } = result
+          const obj = parseLink(link) || { last: { page: 1 } }
+          setLastPage(Number(obj.last.page))
+          setPageIssues(data)
+        })
+        .catch((error: Error) => console.error(error.message))
+    }
+
     return
-  }, [])
+  }, deps)
+
+  // React.useEffect(() => {
+  //   async function fetchMyAPI() {
+  //     try {
+  //       const issues = await load<{}[]>(
+  //         "https://api.github.com/repos/rails/rails/issues"
+  //       )
+  //       console.log(filterOutPullRequests(await issues.data))
+  //       console.log(parseLink(issues.headers || ""))
+  //     } catch (error) {
+  //       console.log(error)
+  //     }
+  //   }
+  //   // fetchMyAPI()
+  //   return
+  // }, [])
 
   const handleGroupSelect = (selection: string) => {
     if (issueStateFilter === selection) return
@@ -103,12 +138,12 @@ function App() {
 
   const handleSort = (sort: string) => {
     setActivePage(1)
-    if (sort === sortColumn.sort)
-      return setSortColumn({
-        ...sortColumn,
-        direction: sortColumn.direction === "asc" ? "desc" : "asc",
+    if (sort === sortColumnParams.sort)
+      return setSortColumnParams({
+        ...sortColumnParams,
+        direction: sortColumnParams.direction === "asc" ? "desc" : "asc",
       })
-    setSortColumn({ sort, direction: "desc" })
+    setSortColumnParams({ sort, direction: "desc" })
   }
 
   const handlePageSelect = (_: {}, idx: number) => {
@@ -123,6 +158,10 @@ function App() {
     } else setBookmarks({ ...bookmarks, [issueNumber]: true })
   }
 
+  const handleRepoInput = ({ repo, org }: { repo: string; org: string }) => {
+    setRepository({ name: repo, org })
+  }
+
   return (
     <div className="px-4">
       <header>
@@ -130,6 +169,7 @@ function App() {
           Github Repository Dashboard
         </h1>
       </header>
+      <OrgRepoInputForm onChange={handleRepoInput} />
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-2">
           <ListGroup
@@ -142,7 +182,7 @@ function App() {
           <table className="w-full">
             <TableHeader
               onSort={handleSort}
-              sortColumn={sortColumn}
+              sortColumn={sortColumnParams}
               items={sortGroupItems}
             />
             <TableBody

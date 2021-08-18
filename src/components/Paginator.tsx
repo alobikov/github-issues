@@ -15,6 +15,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
   className,
   onChange,
 }) => {
+  if (count <= 1) return null
   return (
     <div className={cn(className)}>
       <Pagination

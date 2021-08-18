@@ -50,7 +50,9 @@
   "devDependencies": {
     "@types/parse-link-header": "^1.0.0",
     "autoprefixer": "^9.8.6",
+    "enzyme": "^3.11.0",
     "postcss": "^7.0.36",
+    "react-test-render": "^1.1.2",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7"
   }
 }
