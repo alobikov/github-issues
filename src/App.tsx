@@ -8,7 +8,10 @@ import load from "./services/api"
 import parseLink from "parse-link-header"
 import { IIssue } from "./types/issue"
 
-let url = "https://api.github.com/repos/rails/rails/issues"
+const repo = "/Rob--W/cors-anywhere"
+
+let url =
+  "http://localhost:8080/https://api.github.com/repos" + repo + "/issues"
 
 const filterGroupItems = [
   { title: "All Issues", state: "all" },
