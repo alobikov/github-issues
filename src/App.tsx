@@ -35,6 +35,7 @@ export interface ISortColumn {
 }
 
 function App() {
+  const [loading, setLoading] = useState(false);
   const [issueStateFilter, setIssueStateFilter] = useState("all");
   const [sortColumnParams, setSortColumnParams] = useState<ISortColumn>({
     sort: "created",
@@ -75,6 +76,7 @@ function App() {
       ...sortColumnParams,
     };
 
+    setLoading(true);
     getIssues(repository, params)
       .then((result) => {
         if (result) {
@@ -83,7 +85,10 @@ function App() {
           setPageIssues(issues);
         }
       })
-      .catch((error: Error) => console.error(error.message));
+      .catch((error: Error) => console.error(error.message))
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -131,11 +136,11 @@ function App() {
   return (
     <div className="px-4">
       <header>
-        <h1 className="text-red-800 text-center p-4 text-lg">
-          Github Repository Dashboard
+        <h1 className="text-red-800 text-center font-bold p-4 text-2xl">
+          Github Repository Issues Viewer
         </h1>
       </header>
-      <OrgRepoInputForm onChange={handleRepoInput} />
+      <OrgRepoInputForm onChange={handleRepoInput} disabled={loading} />
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-2">
           <ListGroup

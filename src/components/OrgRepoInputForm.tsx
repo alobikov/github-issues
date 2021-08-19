@@ -1,9 +1,10 @@
-import React from "react"
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"
-import { TextField, Button } from "@material-ui/core"
+import React from "react";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import { TextField, Button } from "@material-ui/core";
 
 interface OrgRepoInputFormProps {
-  onChange({ repo, org }: { repo: string; org: string }): void
+  disabled: boolean;
+  onChange({ repo, org }: { repo: string; org: string }): void;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -20,21 +21,24 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "25ch",
     },
   })
-)
+);
 
-export const OrgRepoInputForm = ({ onChange }: OrgRepoInputFormProps) => {
-  const classes = useStyles()
-  const [input, setInput] = React.useState({ repo: "", org: "" })
+export const OrgRepoInputForm = ({
+  onChange,
+  disabled,
+}: OrgRepoInputFormProps) => {
+  const classes = useStyles();
+  const [input, setInput] = React.useState({ repo: "", org: "" });
 
   const handleSubmit = (event: React.SyntheticEvent) => {
-    event.preventDefault()
-    console.log("submit")
-    onChange(input)
-  }
+    event.preventDefault();
+    console.log("submit");
+    onChange(input);
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInput({ ...input, [event.target.id]: event.target.value })
-  }
+    setInput({ ...input, [event.target.id]: event.target.value });
+  };
 
   return (
     <>
@@ -63,7 +67,12 @@ export const OrgRepoInputForm = ({ onChange }: OrgRepoInputFormProps) => {
             onChange={handleChange}
             value={input.repo}
           />
-          <Button type="submit" variant="contained" color="primary">
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={disabled}
+          >
             Submit
           </Button>
         </form>
@@ -72,5 +81,5 @@ export const OrgRepoInputForm = ({ onChange }: OrgRepoInputFormProps) => {
         Both repository and organization names needed!
       </div> */}
     </>
-  )
-}
+  );
+};
