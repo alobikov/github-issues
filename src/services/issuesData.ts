@@ -7,6 +7,10 @@ interface IRepository {
   org: string;
 }
 
+interface QueryParams {
+  [name: string]: string;
+}
+
 const extractLastPage = (headers: Headers): number => {
   const link = headers.get("link");
   if (!link) return 1;
@@ -15,11 +19,11 @@ const extractLastPage = (headers: Headers): number => {
 };
 
 export const getIssues = async (
-  repo: IRepository
+  repo: IRepository,
+  params: QueryParams
 ): Promise<IssuesData | null> => {
-  const result = await http<IssuesDataFromServer[]>({
-    path: `/repos/${repo.org}/${repo.name}/issues`,
-  });
+  const path = `/repos/${repo.org}/${repo.name}/issues`;
+  const result = await http<IssuesDataFromServer[]>({ path, params });
   if (result.ok && result.body) {
     return {
       issues: result.body,
@@ -27,21 +31,6 @@ export const getIssues = async (
     };
   } else {
     return null;
-  }
-};
-
-export const loadAll = async (url: string) => {
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/vnd.github.v3+json",
-    },
-  });
-  if (response.ok) {
-    const data: IIssue[] = await response.json();
-    const link: string = response.headers.get("link") || "";
-    return { data, link };
-  } else {
-    throw new Error("Network response not OK");
   }
 };
 

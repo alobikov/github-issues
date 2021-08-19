@@ -1,9 +1,14 @@
 import { gitApiUrl } from "../config/appSettings";
 
+interface QueryParams {
+  [name: string]: string;
+}
+
 export interface HttpRequest<REQB> {
   path: string;
   method?: string;
   body?: REQB;
+  params?: QueryParams;
   accessToken?: string;
 }
 export interface HttpResponse<RESB> {
@@ -12,10 +17,24 @@ export interface HttpResponse<RESB> {
   headers?: Headers;
 }
 
+const withParams = (url: string, params: QueryParams): string => {
+  console.log(url);
+  let newUrl = new URL(url);
+  Object.entries(params).forEach(([key, value]) => {
+    newUrl.searchParams.set(key, value);
+  });
+  console.log(newUrl.toString());
+  return newUrl.toString();
+};
+
 export const http = async <RESB, REQB = undefined>(
   config: HttpRequest<REQB>
 ): Promise<HttpResponse<RESB>> => {
-  const request = new Request(`${gitApiUrl}${config.path}`, {
+  let url = `${gitApiUrl}${config.path}`;
+  if (config.params) {
+    url = withParams(url, config.params);
+  }
+  const request = new Request(url, {
     method: config.method || "get",
     headers: {
       "Content-Type": "application/json",

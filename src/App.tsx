@@ -1,24 +1,25 @@
-import React, { useState } from "react"
-import "./App.css"
-import { ListGroup } from "./components/ListGroup"
-import { TableHeader } from "./components/TableHeader"
-import { TableBody } from "./components/TableBody"
-import { Paginator } from "./components/Paginator"
-import { loadAll, loadIds } from "./services/api"
-import parseLink from "parse-link-header"
-import { IIssue } from "./types/issue"
-import { OrgRepoInputForm } from "./components/OrgRepoInputForm"
-import { isJSDocNullableType } from "typescript"
+import React, { useState } from "react";
+import "./App.css";
+import { ListGroup } from "./components/ListGroup";
+import { TableHeader } from "./components/TableHeader";
+import { TableBody } from "./components/TableBody";
+import { Paginator } from "./components/Paginator";
+import { loadAll, loadIds } from "./services/api";
+import parseLink from "parse-link-header";
+import { IIssue, IssuesDataFromServer } from "./types/issue";
+import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
+import { isJSDocNullableType } from "typescript";
+import { getIssues } from "./services/issuesData";
 
-const API_URL = "https://api.github.com/repos"
-const PAGE_SIZE = 30
+const API_URL = "https://api.github.com/repos";
+const PAGE_SIZE = 30;
 
 const filterGroupItems = [
   { title: "All", state: "all" },
   { title: "Open", state: "open" },
   { title: "Closed", state: "closed" },
   { title: "Bookmarked", state: "bookmarked" },
-]
+];
 
 const sortGroupItems = [
   { key: "title", title: "Title" },
@@ -27,60 +28,54 @@ const sortGroupItems = [
   { sort: "updated", title: "Updated At" },
   { sort: "comments", title: "Comments" },
   { key: "bookmark", title: "" },
-]
+];
 
 interface ISortColumn {
-  sort: string
-  direction: "asc" | "desc"
+  sort: string;
+  direction: "asc" | "desc";
 }
 
 interface IRepo {
-  name: string
-  org: string
+  name: string;
+  org: string;
 }
 
 interface IParams {
-  [name: string]: string
+  [name: string]: string;
 }
 
 function App() {
-  const [issueStateFilter, setIssueStateFilter] = React.useState("all")
+  const [issueStateFilter, setIssueStateFilter] = React.useState("all");
   const [sortColumnParams, setSortColumnParams] = React.useState<ISortColumn>({
     sort: "created",
     direction: "desc",
-  })
-  const [activePage, setActivePage] = React.useState(1)
-  const [pageIssues, setPageIssues] = React.useState<IIssue[] | []>([])
-  const [bookmarks, setBookmarks] = React.useState<Record<string, boolean>>({})
-  const [lastPage, setLastPage] = React.useState<number>(1)
-  const [repository, setRepository] = React.useState<IRepo | null>(null)
+  });
+  const [activePage, setActivePage] = React.useState(1);
+  const [pageIssues, setPageIssues] = React.useState<
+    IssuesDataFromServer[] | []
+  >([]);
+  const [bookmarks, setBookmarks] = React.useState<Record<string, boolean>>({});
+  const [lastPage, setLastPage] = React.useState<number>(1);
+  const [repository, setRepository] = React.useState<IRepo | null>(null);
 
   const filterOutPullRequests = (issues: {}[]) =>
-    issues.filter((issue) => !issue.hasOwnProperty("pull_request"))
-
-  const urlWithParams = (url: string, params: IParams): string => {
-    let newUrl = new URL(url)
-    Object.entries(params).forEach(([key, value]) => {
-      newUrl.searchParams.set(key, value)
-    })
-    return newUrl.toString()
-  }
+    issues.filter((issue) => !issue.hasOwnProperty("pull_request"));
 
   const urlWithPath = (url: string, repository: IRepo | null) => {
-    return `${url}/${repository?.org}/${repository?.name}/issues`
-  }
+    return `${url}/${repository?.org}/${repository?.name}/issues`;
+  };
 
-  const deps = [activePage, issueStateFilter, sortColumnParams, repository]
+  const deps = [activePage, issueStateFilter, sortColumnParams, repository];
 
   React.useEffect(() => {
     const params = {
       page: activePage.toString(),
       state: issueStateFilter,
       ...sortColumnParams,
-    }
-    const url = urlWithPath(API_URL, repository)
+    };
+    const url = urlWithPath(API_URL, repository);
 
-    if (!repository) return
+    if (!repository) return;
     // function fetchAllIssues(url: string) {
     // return load<{}[]>(url)
     // {
@@ -92,27 +87,28 @@ function App() {
     if (issueStateFilter === "bookmarked") {
       const ids = Object.keys(bookmarks)
         .filter((key: string) => bookmarks[key])
-        .map((key) => Number(key))
+        .map((key) => Number(key));
       loadIds(url, ids)
         .then((data) => {
-          const pageCount = Math.ceil(data.length / PAGE_SIZE)
-          setLastPage(pageCount)
-          setPageIssues(data)
+          const pageCount = Math.ceil(data.length / PAGE_SIZE);
+          setLastPage(pageCount);
+          setPageIssues(data);
         })
-        .catch((error: Error) => console.error(error.message))
+        .catch((error: Error) => console.error(error.message));
     } else {
-      loadAll(urlWithParams(url, params))
+      getIssues(repository, params)
         .then((result) => {
-          const { data, link } = result
-          const obj = parseLink(link) || { last: { page: 1 } }
-          setLastPage(Number(obj.last.page))
-          setPageIssues(data)
+          if (result) {
+            const { issues, lastPage } = result;
+            setLastPage(Number(lastPage));
+            setPageIssues(issues);
+          }
         })
-        .catch((error: Error) => console.error(error.message))
+        .catch((error: Error) => console.error(error.message));
     }
 
-    return
-  }, deps)
+    return;
+  }, deps);
 
   // React.useEffect(() => {
   //   async function fetchMyAPI() {
@@ -131,36 +127,36 @@ function App() {
   // }, [])
 
   const handleGroupSelect = (selection: string) => {
-    if (issueStateFilter === selection) return
-    setIssueStateFilter(selection)
-    setActivePage(1)
-  }
+    if (issueStateFilter === selection) return;
+    setIssueStateFilter(selection);
+    setActivePage(1);
+  };
 
   const handleSort = (sort: string) => {
-    setActivePage(1)
+    setActivePage(1);
     if (sort === sortColumnParams.sort)
       return setSortColumnParams({
         ...sortColumnParams,
         direction: sortColumnParams.direction === "asc" ? "desc" : "asc",
-      })
-    setSortColumnParams({ sort, direction: "desc" })
-  }
+      });
+    setSortColumnParams({ sort, direction: "desc" });
+  };
 
   const handlePageSelect = (_: {}, idx: number) => {
-    if (activePage === idx) return
-    console.log(idx)
-    setActivePage(idx)
-  }
+    if (activePage === idx) return;
+    console.log(idx);
+    setActivePage(idx);
+  };
 
   const handleToggleBookmark = (issueNumber: number) => {
     if (issueNumber in bookmarks) {
-      setBookmarks({ ...bookmarks, [issueNumber]: false })
-    } else setBookmarks({ ...bookmarks, [issueNumber]: true })
-  }
+      setBookmarks({ ...bookmarks, [issueNumber]: false });
+    } else setBookmarks({ ...bookmarks, [issueNumber]: true });
+  };
 
   const handleRepoInput = ({ repo, org }: { repo: string; org: string }) => {
-    setRepository({ name: repo, org })
-  }
+    setRepository({ name: repo, org });
+  };
 
   return (
     <div className="px-4">
@@ -201,7 +197,7 @@ function App() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
