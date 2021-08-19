@@ -1,6 +1,6 @@
 import { gitApiUrl } from "../config/appSettings";
 
-interface QueryParams {
+export interface QueryParams {
   [name: string]: string;
 }
 

@@ -4,15 +4,10 @@ import { ListGroup } from "./components/ListGroup";
 import { TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
-import { loadAll, loadIds } from "./services/api";
-import parseLink from "parse-link-header";
-import { IIssue, IssuesDataFromServer } from "./types/issue";
+import { IssuesDataFromServer } from "./types/issue";
 import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
-import { isJSDocNullableType } from "typescript";
 import { getIssues, getIssuesByIds } from "./services/issuesData";
-
-const API_URL = "https://api.github.com/repos";
-const PAGE_SIZE = 30;
+import { PAGE_SIZE } from "./config/appSettings";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -45,18 +40,16 @@ interface IParams {
 }
 
 function App() {
-  const [issueStateFilter, setIssueStateFilter] = React.useState("all");
-  const [sortColumnParams, setSortColumnParams] = React.useState<ISortColumn>({
+  const [issueStateFilter, setIssueStateFilter] = useState("all");
+  const [sortColumnParams, setSortColumnParams] = useState<ISortColumn>({
     sort: "created",
     direction: "desc",
   });
-  const [activePage, setActivePage] = React.useState(1);
-  const [pageIssues, setPageIssues] = React.useState<
-    IssuesDataFromServer[] | []
-  >([]);
-  const [bookmarks, setBookmarks] = React.useState<Record<string, boolean>>({});
-  const [lastPage, setLastPage] = React.useState<number>(1);
-  const [repository, setRepository] = React.useState<IRepo | null>(null);
+  const [activePage, setActivePage] = useState(1);
+  const [pageIssues, setPageIssues] = useState<IssuesDataFromServer[] | []>([]);
+  const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
+  const [lastPage, setLastPage] = useState<number>(1);
+  const [repository, setRepository] = useState<IRepo | null>(null);
 
   const filterOutPullRequests = (issues: {}[]) =>
     issues.filter((issue) => !issue.hasOwnProperty("pull_request"));
@@ -73,7 +66,6 @@ function App() {
       state: issueStateFilter,
       ...sortColumnParams,
     };
-    const url = urlWithPath(API_URL, repository);
 
     if (!repository) return;
     // function fetchAllIssues(url: string) {
@@ -87,10 +79,10 @@ function App() {
     if (issueStateFilter === "bookmarked") {
       const ids = Object.keys(bookmarks);
       getIssuesByIds(repository, ids)
-        .then((data) => {
-          const pageCount = Math.ceil(data.length / PAGE_SIZE);
+        .then((result) => {
+          const pageCount = Math.ceil(result.length / PAGE_SIZE);
           setLastPage(pageCount);
-          setPageIssues(data);
+          setPageIssues(result);
         })
         .catch((error: Error) => console.error(error.message));
     } else {

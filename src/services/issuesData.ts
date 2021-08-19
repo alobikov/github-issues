@@ -1,14 +1,11 @@
-import { http } from "./http";
+import { http, QueryParams } from "./http";
 import { IIssue, IssuesData, IssuesDataFromServer } from "../types/issue";
 import parseLink from "parse-link-header";
+import { PAGE_SIZE } from "../config/appSettings";
 
 interface IRepository {
   name: string;
   org: string;
-}
-
-interface QueryParams {
-  [name: string]: string;
 }
 
 const extractLastPage = (headers: Headers): number => {
@@ -23,7 +20,11 @@ export const getIssues = async (
   params: QueryParams
 ): Promise<IssuesData | null> => {
   const path = `/repos/${repo.org}/${repo.name}/issues`;
-  const result = await http<IssuesDataFromServer[]>({ path, params });
+  const extendedParams = { ...params, per_page: PAGE_SIZE.toString() };
+  const result = await http<IssuesDataFromServer[]>({
+    path,
+    params: extendedParams,
+  });
   if (result.ok && result.body) {
     return {
       issues: result.body,
