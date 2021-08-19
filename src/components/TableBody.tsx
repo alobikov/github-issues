@@ -18,6 +18,7 @@ export const TableBody: React.FC<TableBodyProps> = ({
     <tbody>
       {items.map((item, idx) => (
         <TableRow
+          key={item.number}
           idx={idx}
           item={item}
           bookmark={bookmarks[item.number]}
