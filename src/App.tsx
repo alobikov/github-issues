@@ -5,14 +5,13 @@ import { TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
 import { IssueDataFromServer } from "./types/issue";
-import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
 import { getIssues, getIssuesByIds, IRepository } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
 import { sortBy } from "./utils/sort";
 import { BookmarksType } from "./types/types";
 import { LinearProgress } from "@material-ui/core";
-import { FaLessThanEqual } from "react-icons/fa";
 import { loadFromStorage, saveToStorage } from "./services/localStorage";
+import { InputForm } from "./components/InputForm";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -162,7 +161,7 @@ function App() {
           Github Repository Issues Viewer
         </h1>
       </header>
-      <OrgRepoInputForm onChange={handleRepoInput} disabled={loading} />
+      <InputForm onChange={handleRepoInput} disabled={loading} />
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-2">
           <ListGroup
