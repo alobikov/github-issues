@@ -9,6 +9,7 @@ export interface HttpRequest<REQB> {
 export interface HttpResponse<RESB> {
   ok: boolean;
   body?: RESB;
+  headers?: Headers;
 }
 
 export const http = async <RESB, REQB = undefined>(
@@ -28,7 +29,8 @@ export const http = async <RESB, REQB = undefined>(
   const response = await fetch(request);
   if (response.ok) {
     const body = await response.json();
-    return { ok: response.ok, body };
+    const headers = response.headers;
+    return { ok: response.ok, body, headers };
   } else {
     logError(request, response);
     return { ok: response.ok };
