@@ -82,7 +82,9 @@ function App() {
         .then((result) => {
           const pageCount = Math.ceil(result.length / PAGE_SIZE);
           setLastPage(pageCount);
-          setPageIssues(result);
+          const startIndex = (activePage - 1) * PAGE_SIZE;
+          const pageSlice = result.slice(startIndex, startIndex + PAGE_SIZE);
+          setPageIssues(pageSlice);
         })
         .catch((error: Error) => console.error(error.message));
     } else {
