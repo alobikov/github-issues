@@ -4,7 +4,7 @@ import { ListGroup } from "./components/ListGroup";
 import { TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
-import { IssuesDataFromServer } from "./types/issue";
+import { IssueDataFromServer } from "./types/issue";
 import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
 import { getIssues, getIssuesByIds } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
@@ -50,7 +50,7 @@ function App() {
     direction: "desc",
   });
   const [activePage, setActivePage] = useState(1);
-  const [pageIssues, setPageIssues] = useState<IssuesDataFromServer[] | []>([]);
+  const [pageIssues, setPageIssues] = useState<IssueDataFromServer[] | []>([]);
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
   const [lastPage, setLastPage] = useState<number>(1);
   const [repository, setRepository] = useState<IRepo | null>(null);
@@ -62,23 +62,14 @@ function App() {
     return `${url}/${repository?.org}/${repository?.name}/issues`;
   };
 
-  const deps = [activePage, issueStateFilter, sortColumnParams, repository];
-
   React.useEffect(() => {
+    if (!repository) return;
+
     const params = {
       page: activePage.toString(),
       state: issueStateFilter,
       ...sortColumnParams,
     };
-
-    if (!repository) return;
-    // function fetchAllIssues(url: string) {
-    // return load<{}[]>(url)
-    // {
-    // const issues = result.data as IIssue[]
-    // return { issues, link }
-    // })
-    // }
 
     if (issueStateFilter === "bookmarked") {
       const ids = Object.keys(bookmarks);
@@ -95,7 +86,10 @@ function App() {
           setPageIssues(pageSlice);
         })
         .catch((error: Error) => console.error(error.message));
-    } else {
+      return;
+    }
+
+    if (["all", "open", "closed"].includes(issueStateFilter)) {
       getIssues(repository, params)
         .then((result) => {
           if (result) {
@@ -108,23 +102,7 @@ function App() {
     }
 
     return;
-  }, deps);
-
-  // React.useEffect(() => {
-  //   async function fetchMyAPI() {
-  //     try {
-  //       const issues = await load<{}[]>(
-  //         "https://api.github.com/repos/rails/rails/issues"
-  //       )
-  //       console.log(filterOutPullRequests(await issues.data))
-  //       console.log(parseLink(issues.headers || ""))
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   }
-  //   // fetchMyAPI()
-  //   return
-  // }, [])
+  }, [activePage, issueStateFilter, sortColumnParams, repository]);
 
   const handleGroupSelect = (selection: string) => {
     if (issueStateFilter === selection) return;

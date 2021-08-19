@@ -1,5 +1,5 @@
 import { http, QueryParams } from "./http";
-import { IIssue, IssuesData, IssuesDataFromServer } from "../types/issue";
+import { IIssue, IssuesData, IssueDataFromServer } from "../types/issue";
 import parseLink from "parse-link-header";
 import { PAGE_SIZE } from "../config/appSettings";
 
@@ -21,7 +21,7 @@ export const getIssues = async (
 ): Promise<IssuesData | null> => {
   const path = `/repos/${repo.org}/${repo.name}/issues`;
   const extendedParams = { ...params, per_page: PAGE_SIZE.toString() };
-  const result = await http<IssuesDataFromServer[]>({
+  const result = await http<IssueDataFromServer[]>({
     path,
     params: extendedParams,
   });
@@ -38,9 +38,9 @@ export const getIssues = async (
 export const getIssueById = async (
   repo: IRepository,
   id: string
-): Promise<IssuesDataFromServer | null> => {
+): Promise<IssueDataFromServer | null> => {
   const path = `/repos/${repo.org}/${repo.name}/issues/${id}`;
-  const result = await http<IssuesDataFromServer>({ path });
+  const result = await http<IssueDataFromServer>({ path });
   if (result.ok && result.body) {
     return result.body;
   } else {

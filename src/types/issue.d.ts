@@ -9,7 +9,7 @@ export interface IIssue {
   comments: string;
 }
 
-export interface IssuesDataFromServer {
+export interface IssueDataFromServer {
   id: number;
   title: string;
   state: string;
@@ -21,6 +21,6 @@ export interface IssuesDataFromServer {
 }
 
 export interface IssuesData {
-  issues: IssuesDataFromServer[];
+  issues: IssueDataFromServer[];
   lastPage: number;
 }

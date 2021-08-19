@@ -1,5 +1,5 @@
 import { ISortColumn } from "../App";
-import { IssuesDataFromServer } from "../types/issue";
+import { IssueDataFromServer } from "../types/issue";
 
 type SortType = "created_at" | "updated_at" | "comments";
 type DirectionType = "asc" | "desc";
@@ -11,17 +11,17 @@ const sortKeys = {
 } as const;
 
 export const sortBy = (
-  items: IssuesDataFromServer[],
+  items: IssueDataFromServer[],
   { sort, direction }: ISortColumn
-): IssuesDataFromServer[] => {
+): IssueDataFromServer[] => {
   const sortedItems = items;
   sortedItems.sort((a, b) => compare(a, b, sortKeys[sort], direction));
   return sortedItems;
 };
 
 function compare(
-  a: IssuesDataFromServer,
-  b: IssuesDataFromServer,
+  a: IssueDataFromServer,
+  b: IssueDataFromServer,
   sort: SortType,
   direction: DirectionType
 ) {
