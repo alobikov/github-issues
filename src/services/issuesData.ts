@@ -3,7 +3,7 @@ import { IIssue, IssuesData, IssueDataFromServer } from "../types/issue";
 import parseLink from "parse-link-header";
 import { PAGE_SIZE } from "../config/appSettings";
 
-interface IRepository {
+export interface IRepository {
   name: string;
   org: string;
 }

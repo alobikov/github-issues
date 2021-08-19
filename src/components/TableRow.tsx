@@ -29,6 +29,14 @@ export const TableRow = ({
     setOpen(false);
   };
 
+  const handleToggleBookmark = (
+    event: React.MouseEvent<HTMLTableDataCellElement>,
+    id: string
+  ) => {
+    event.stopPropagation();
+    toggleBookmark(id);
+  };
+
   return (
     <>
       <tr
@@ -48,7 +56,9 @@ export const TableRow = ({
         <td className="text-center">{item.comments}</td>
         <td
           className="cursor-pointer pr-2"
-          onClick={() => toggleBookmark(item.number.toString())}
+          onClick={(event) =>
+            handleToggleBookmark(event, item.number.toString())
+          }
         >
           {bookmark ? <FaBookmark /> : <FaRegBookmark />}
         </td>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { ListGroup } from "./components/ListGroup";
 import { TableHeader } from "./components/TableHeader";
@@ -6,7 +6,7 @@ import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
 import { IssueDataFromServer } from "./types/issue";
 import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
-import { getIssues, getIssuesByIds } from "./services/issuesData";
+import { getIssues, getIssuesByIds, IRepository } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
 import { sortBy } from "./utils/sort";
 import { BookmarksType } from "./types/types";
@@ -34,15 +34,6 @@ export interface ISortColumn {
   direction: "asc" | "desc";
 }
 
-interface IRepo {
-  name: string;
-  org: string;
-}
-
-interface IParams {
-  [name: string]: string;
-}
-
 function App() {
   const [issueStateFilter, setIssueStateFilter] = useState("all");
   const [sortColumnParams, setSortColumnParams] = useState<ISortColumn>({
@@ -53,16 +44,29 @@ function App() {
   const [pageIssues, setPageIssues] = useState<IssueDataFromServer[] | []>([]);
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
   const [lastPage, setLastPage] = useState<number>(1);
-  const [repository, setRepository] = useState<IRepo | null>(null);
+  const [repository, setRepository] = useState<IRepository | null>(null);
 
-  const filterOutPullRequests = (issues: {}[]) =>
-    issues.filter((issue) => !issue.hasOwnProperty("pull_request"));
+  const createPageOfBookmarks = () => {
+    if (!repository) return;
 
-  const urlWithPath = (url: string, repository: IRepo | null) => {
-    return `${url}/${repository?.org}/${repository?.name}/issues`;
+    const ids = Object.keys(bookmarks);
+
+    getIssuesByIds(repository, ids)
+      .then((result) => {
+        const pageCount = Math.ceil(result.length / PAGE_SIZE);
+        setLastPage(pageCount);
+        const sortedIssues = sortBy(result, sortColumnParams);
+        const startIndex = (activePage - 1) * PAGE_SIZE;
+        const pageSlice = sortedIssues.slice(
+          startIndex,
+          startIndex + PAGE_SIZE
+        );
+        setPageIssues(pageSlice);
+      })
+      .catch((error: Error) => console.error(error.message));
   };
 
-  React.useEffect(() => {
+  const createPage = () => {
     if (!repository) return;
 
     const params = {
@@ -71,38 +75,25 @@ function App() {
       ...sortColumnParams,
     };
 
-    if (issueStateFilter === "bookmarked") {
-      const ids = Object.keys(bookmarks);
-      getIssuesByIds(repository, ids)
-        .then((result) => {
-          const pageCount = Math.ceil(result.length / PAGE_SIZE);
-          setLastPage(pageCount);
-          const sortedIssues = sortBy(result, sortColumnParams);
-          const startIndex = (activePage - 1) * PAGE_SIZE;
-          const pageSlice = sortedIssues.slice(
-            startIndex,
-            startIndex + PAGE_SIZE
-          );
-          setPageIssues(pageSlice);
-        })
-        .catch((error: Error) => console.error(error.message));
-      return;
-    }
+    getIssues(repository, params)
+      .then((result) => {
+        if (result) {
+          const { issues, lastPage } = result;
+          setLastPage(Number(lastPage));
+          setPageIssues(issues);
+        }
+      })
+      .catch((error: Error) => console.error(error.message));
+  };
 
-    if (["all", "open", "closed"].includes(issueStateFilter)) {
-      getIssues(repository, params)
-        .then((result) => {
-          if (result) {
-            const { issues, lastPage } = result;
-            setLastPage(Number(lastPage));
-            setPageIssues(issues);
-          }
-        })
-        .catch((error: Error) => console.error(error.message));
-    }
-
-    return;
+  useEffect(() => {
+    if (!repository) return;
+    issueStateFilter === "bookmarked" ? createPageOfBookmarks() : createPage();
   }, [activePage, issueStateFilter, sortColumnParams, repository]);
+
+  useEffect(() => {
+    issueStateFilter === "bookmarked" && createPageOfBookmarks();
+  }, [bookmarks]);
 
   const handleGroupSelect = (selection: string) => {
     if (issueStateFilter === selection) return;
