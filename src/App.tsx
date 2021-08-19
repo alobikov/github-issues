@@ -85,9 +85,7 @@ function App() {
     // }
 
     if (issueStateFilter === "bookmarked") {
-      const ids = Object.keys(bookmarks)
-        .filter((key: string) => bookmarks[key])
-        .map((key) => Number(key));
+      const ids = Object.keys(bookmarks);
       getIssuesByIds(repository, ids)
         .then((data) => {
           const pageCount = Math.ceil(data.length / PAGE_SIZE);
@@ -150,7 +148,8 @@ function App() {
 
   const handleToggleBookmark = (issueNumber: number) => {
     if (issueNumber in bookmarks) {
-      setBookmarks({ ...bookmarks, [issueNumber]: false });
+      delete bookmarks[issueNumber];
+      setBookmarks(Object.assign({}, bookmarks));
     } else setBookmarks({ ...bookmarks, [issueNumber]: true });
   };
 

@@ -36,9 +36,9 @@ export const getIssues = async (
 
 export const getIssueById = async (
   repo: IRepository,
-  id: number
+  id: string
 ): Promise<IssuesDataFromServer | null> => {
-  const path = `/repos/${repo.org}/${repo.name}/issues/${id.toString()}`;
+  const path = `/repos/${repo.org}/${repo.name}/issues/${id}`;
   const result = await http<IssuesDataFromServer>({ path });
   if (result.ok && result.body) {
     return result.body;
@@ -47,7 +47,7 @@ export const getIssueById = async (
   }
 };
 
-export const getIssuesByIds = async (repo: IRepository, ids: number[]) => {
+export const getIssuesByIds = async (repo: IRepository, ids: string[]) => {
   return Promise.all(
     ids.map(async (id) => {
       const data = await getIssueById(repo, id);
