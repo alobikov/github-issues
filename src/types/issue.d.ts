@@ -6,7 +6,7 @@ export interface IIssue {
   user: { login: string };
   created_at: string;
   updated_at: string;
-  comments: number;
+  comments: string;
 }
 
 export interface IssuesDataFromServer {
@@ -17,7 +17,7 @@ export interface IssuesDataFromServer {
   user: { login: string };
   created_at: string;
   updated_at: string;
-  comments: number;
+  comments: string;
 }
 
 export interface IssuesData {
