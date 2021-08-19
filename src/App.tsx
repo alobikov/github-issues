@@ -8,6 +8,8 @@ import { IssuesDataFromServer } from "./types/issue";
 import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
 import { getIssues, getIssuesByIds } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
+import { TableSortLabel } from "@material-ui/core";
+import { sortBy } from "./utils/sort";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -25,8 +27,10 @@ const sortGroupItems = [
   { key: "bookmark", title: "" },
 ];
 
-interface ISortColumn {
-  sort: string;
+type SortKeyType = "created" | "updated" | "comments";
+
+export interface ISortColumn {
+  sort: SortKeyType;
   direction: "asc" | "desc";
 }
 
@@ -82,8 +86,12 @@ function App() {
         .then((result) => {
           const pageCount = Math.ceil(result.length / PAGE_SIZE);
           setLastPage(pageCount);
+          const sortedIssues = sortBy(result, sortColumnParams);
           const startIndex = (activePage - 1) * PAGE_SIZE;
-          const pageSlice = result.slice(startIndex, startIndex + PAGE_SIZE);
+          const pageSlice = sortedIssues.slice(
+            startIndex,
+            startIndex + PAGE_SIZE
+          );
           setPageIssues(pageSlice);
         })
         .catch((error: Error) => console.error(error.message));
@@ -124,7 +132,7 @@ function App() {
     setActivePage(1);
   };
 
-  const handleSort = (sort: string) => {
+  const handleSort = (sort: SortKeyType) => {
     setActivePage(1);
     if (sort === sortColumnParams.sort)
       return setSortColumnParams({
