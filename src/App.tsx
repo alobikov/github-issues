@@ -11,6 +11,8 @@ import { PAGE_SIZE } from "./config/appSettings";
 import { sortBy } from "./utils/sort";
 import { BookmarksType } from "./types/types";
 import { LinearProgress } from "@material-ui/core";
+import { FaLessThanEqual } from "react-icons/fa";
+import { loadFromStorage, saveToStorage } from "./services/localStorage";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -53,6 +55,7 @@ function App() {
 
     const ids = Object.keys(bookmarks);
 
+    setLoading(true);
     getIssuesByIds(repository, ids)
       .then((result) => {
         const pageCount = Math.ceil(result.length / PAGE_SIZE);
@@ -65,7 +68,8 @@ function App() {
         );
         setPageIssues(pageSlice);
       })
-      .catch((error: Error) => console.error(error.message));
+      .catch((error: Error) => console.error(error.message))
+      .finally(() => setLoading(false));
   };
 
   const createPage = () => {
@@ -87,19 +91,36 @@ function App() {
         }
       })
       .catch((error: Error) => console.error(error.message))
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     if (!repository) return;
     issueStateFilter === "bookmarked" ? createPageOfBookmarks() : createPage();
-  }, [activePage, issueStateFilter, sortColumnParams, repository]);
+  }, [activePage, issueStateFilter, sortColumnParams]);
 
+  // this is effect needed to reflect bookmark changes on "bookmarked"
   useEffect(() => {
     issueStateFilter === "bookmarked" && createPageOfBookmarks();
+    if (repository) saveToStorage(repository, Object.keys(bookmarks));
   }, [bookmarks]);
+
+  useEffect(() => {
+    if (repository) {
+      setIssueStateFilter("all");
+      setActivePage(1);
+      setSortColumnParams({ sort: "created", direction: "desc" });
+
+      const result = loadFromStorage(repository);
+      if (result) {
+        let loadedBookmarks: BookmarksType = {};
+        result.forEach((key: string) => (loadedBookmarks[key] = true));
+        setBookmarks(loadedBookmarks);
+      } else {
+        setBookmarks({});
+      }
+    }
+  }, [repository]);
 
   const handleGroupSelect = (selection: string) => {
     if (issueStateFilter === selection) return;
@@ -170,13 +191,14 @@ function App() {
               <LinearProgress />
             </div>
           )}
-
-          <Paginator
-            count={lastPage}
-            active={activePage}
-            onChange={handlePageSelect}
-            className="pt-3"
-          />
+          {!loading && (
+            <Paginator
+              count={lastPage}
+              active={activePage}
+              onChange={handlePageSelect}
+              className="pt-3"
+            />
+          )}
         </div>
       </div>
     </div>
