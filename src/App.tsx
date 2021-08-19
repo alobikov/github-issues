@@ -10,6 +10,7 @@ import { getIssues, getIssuesByIds, IRepository } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
 import { sortBy } from "./utils/sort";
 import { BookmarksType } from "./types/types";
+import { LinearProgress } from "@material-ui/core";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -156,12 +157,19 @@ function App() {
               sortColumn={sortColumnParams}
               items={sortGroupItems}
             />
-            <TableBody
-              items={pageIssues}
-              bookmarks={bookmarks}
-              toggleBookmark={handleToggleBookmark}
-            />
+            {!loading && (
+              <TableBody
+                items={pageIssues}
+                bookmarks={bookmarks}
+                toggleBookmark={handleToggleBookmark}
+              />
+            )}
           </table>
+          {loading && (
+            <div className="pt-6">
+              <LinearProgress />
+            </div>
+          )}
 
           <Paginator
             count={lastPage}
