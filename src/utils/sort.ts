@@ -25,11 +25,11 @@ function compare(
   sort: SortType,
   direction: DirectionType
 ) {
-  const convert =
-    sort === "comments"
-      ? (s: string) => Number(s)
-      : (s: string) => Date.parse(s);
-  return direction === "asc"
-    ? convert(a[sort]) - convert(b[sort])
-    : convert(b[sort]) - convert(a[sort]);
+  if (sort === "comments") {
+    return direction === "asc" ? a[sort] - b[sort] : b[sort] - a[sort];
+  } else {
+    return direction === "asc"
+      ? Date.parse(a[sort]) - Date.parse(b[sort])
+      : Date.parse(b[sort]) - Date.parse(a[sort]);
+  }
 }

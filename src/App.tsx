@@ -8,8 +8,8 @@ import { IssueDataFromServer } from "./types/issue";
 import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
 import { getIssues, getIssuesByIds } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
-import { TableSortLabel } from "@material-ui/core";
 import { sortBy } from "./utils/sort";
+import { BookmarksType } from "./types/types";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -51,7 +51,7 @@ function App() {
   });
   const [activePage, setActivePage] = useState(1);
   const [pageIssues, setPageIssues] = useState<IssueDataFromServer[] | []>([]);
-  const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
+  const [bookmarks, setBookmarks] = useState<BookmarksType>({});
   const [lastPage, setLastPage] = useState<number>(1);
   const [repository, setRepository] = useState<IRepo | null>(null);
 
@@ -126,7 +126,7 @@ function App() {
     setActivePage(idx);
   };
 
-  const handleToggleBookmark = (issueNumber: number) => {
+  const handleToggleBookmark = (issueNumber: string) => {
     if (issueNumber in bookmarks) {
       delete bookmarks[issueNumber];
       setBookmarks(Object.assign({}, bookmarks));
