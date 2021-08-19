@@ -34,26 +34,23 @@ export const getIssues = async (
   }
 };
 
-const loadId = async (url: string) => {
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/vnd.github.v3+json",
-    },
-  });
-  if (response.ok) {
-    const data: {} = await response.json();
-    const link: string = response.headers.get("link") || "";
-    return data as IIssue;
+export const getIssueById = async (
+  repo: IRepository,
+  id: number
+): Promise<IssuesDataFromServer | null> => {
+  const path = `/repos/${repo.org}/${repo.name}/issues/${id.toString()}`;
+  const result = await http<IssuesDataFromServer>({ path });
+  if (result.ok && result.body) {
+    return result.body;
   } else {
-    throw new Error("Network response not OK");
+    return null;
   }
 };
 
-export const loadIds = async (url: string, ids: number[]) => {
+export const getIssuesByIds = async (repo: IRepository, ids: number[]) => {
   return Promise.all(
     ids.map(async (id) => {
-      const fullUrl = `${url}/${id.toString()}`;
-      const data = await loadId(fullUrl);
+      const data = await getIssueById(repo, id);
       return data as IIssue;
     })
   );

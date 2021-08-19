@@ -9,7 +9,7 @@ import parseLink from "parse-link-header";
 import { IIssue, IssuesDataFromServer } from "./types/issue";
 import { OrgRepoInputForm } from "./components/OrgRepoInputForm";
 import { isJSDocNullableType } from "typescript";
-import { getIssues } from "./services/issuesData";
+import { getIssues, getIssuesByIds } from "./services/issuesData";
 
 const API_URL = "https://api.github.com/repos";
 const PAGE_SIZE = 30;
@@ -88,7 +88,7 @@ function App() {
       const ids = Object.keys(bookmarks)
         .filter((key: string) => bookmarks[key])
         .map((key) => Number(key));
-      loadIds(url, ids)
+      getIssuesByIds(repository, ids)
         .then((data) => {
           const pageCount = Math.ceil(data.length / PAGE_SIZE);
           setLastPage(pageCount);
