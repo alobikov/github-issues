@@ -12,6 +12,7 @@ import { BookmarksType } from "./types/types";
 import { LinearProgress } from "@material-ui/core";
 import { loadFromStorage, saveToStorage } from "./services/localStorage";
 import { InputForm } from "./components/InputForm";
+import { checkRepository } from "./services/reposData";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -48,6 +49,7 @@ function App() {
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
   const [lastPage, setLastPage] = useState<number>(1);
   const [repository, setRepository] = useState<IRepository | null>(null);
+  const [repositoryValid, setRepositoryValid] = useState(true);
 
   const createPageOfBookmarks = () => {
     if (!repository) return;
@@ -94,7 +96,7 @@ function App() {
   };
 
   useEffect(() => {
-    if (!repository) return;
+    if (!repository || !repositoryValid) return;
     issueStateFilter === "bookmarked" ? createPageOfBookmarks() : createPage();
   }, [activePage, issueStateFilter, sortColumnParams]);
 
@@ -106,18 +108,28 @@ function App() {
 
   useEffect(() => {
     if (repository) {
-      setIssueStateFilter("all");
-      setActivePage(1);
-      setSortColumnParams({ sort: "created", direction: "desc" });
+      setLoading(true);
+      checkRepository(repository)
+        .then((result) => {
+          if (result) {
+            setRepositoryValid(true);
+            setIssueStateFilter("all");
+            setActivePage(1);
+            setSortColumnParams({ sort: "created", direction: "desc" });
 
-      const result = loadFromStorage(repository);
-      if (result) {
-        let loadedBookmarks: BookmarksType = {};
-        result.forEach((key: string) => (loadedBookmarks[key] = true));
-        setBookmarks(loadedBookmarks);
-      } else {
-        setBookmarks({});
-      }
+            const result = loadFromStorage(repository);
+            if (result) {
+              let loadedBookmarks: BookmarksType = {};
+              result.forEach((key: string) => (loadedBookmarks[key] = true));
+              setBookmarks(loadedBookmarks);
+            } else {
+              setBookmarks({});
+            }
+          } else {
+            setRepositoryValid(false);
+          }
+        })
+        .finally(() => setLoading(false));
     }
   }, [repository]);
 
@@ -162,6 +174,13 @@ function App() {
         </h1>
       </header>
       <InputForm onChange={handleRepoInput} disabled={loading} />
+      {repositoryValid ? (
+        <h2 className="mb-3 mt-1">&nbsp;</h2>
+      ) : (
+        <h2 className="text-red-500 text-center mb-3 mt-1">
+          Not valid Github repository!
+        </h2>
+      )}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-2">
           <ListGroup
@@ -170,6 +189,7 @@ function App() {
             selectedItem={issueStateFilter}
           />
         </div>
+
         <div className="col-span-10">
           <table className="w-full">
             <TableHeader
@@ -177,7 +197,7 @@ function App() {
               sortColumn={sortColumnParams}
               items={sortGroupItems}
             />
-            {!loading && (
+            {!loading && repositoryValid && (
               <TableBody
                 items={pageIssues}
                 bookmarks={bookmarks}
@@ -185,12 +205,14 @@ function App() {
               />
             )}
           </table>
+
           {loading && (
             <div className="pt-6">
               <LinearProgress />
             </div>
           )}
-          {!loading && (
+
+          {!loading && repositoryValid && (
             <Paginator
               count={lastPage}
               active={activePage}

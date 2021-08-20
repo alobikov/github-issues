@@ -10,6 +10,7 @@ export interface HttpRequest<REQB> {
   body?: REQB;
   params?: QueryParams;
   accessToken?: string;
+  skipError?: boolean;
 }
 export interface HttpResponse<RESB> {
   ok: boolean;
@@ -51,8 +52,12 @@ export const http = async <RESB, REQB = undefined>(
     const headers = response.headers;
     return { ok: response.ok, body, headers };
   } else {
-    logError(request, response);
-    return { ok: response.ok };
+    if (config.skipError) {
+      return { ok: false, body: {} as RESB };
+    } else {
+      logError(request, response);
+      return { ok: response.ok };
+    }
   }
 };
 

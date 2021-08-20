@@ -29,7 +29,7 @@ export const InputForm = ({ onChange, disabled }: OrgRepoInputFormProps) => {
   };
 
   return (
-    <div className="flex justify-center mb-4">
+    <div className="flex justify-center">
       <form onSubmit={handleSubmit} className="flex gap-4">
         {inputFieldValues.map((inputFieldValue, index) => {
           return (
@@ -44,7 +44,6 @@ export const InputForm = ({ onChange, disabled }: OrgRepoInputFormProps) => {
               autoComplete="none"
               {...(errors[inputFieldValue.name] && {
                 error: true,
-                helperText: errors[inputFieldValue.name],
               })}
             />
           );
