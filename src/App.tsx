@@ -169,7 +169,7 @@ function App() {
   return (
     <div className="px-4">
       <header>
-        <h1 className="text-red-800 text-center font-bold p-4 text-2xl">
+        <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
           Github Repository Issues Viewer
         </h1>
       </header>

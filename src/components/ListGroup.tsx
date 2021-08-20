@@ -1,15 +1,15 @@
-import React from "react"
-import cn from "classnames"
+import React from "react";
+import cn from "classnames";
 
 interface IItem {
-  title: string
-  state: string
+  title: string;
+  state: string;
 }
 
 interface ListGroupProps {
-  items: IItem[]
-  selectedItem: string
-  onSelect(selection: string): void
+  items: IItem[];
+  selectedItem: string;
+  onSelect(selection: string): void;
 }
 
 export const ListGroup: React.FC<ListGroupProps> = ({
@@ -28,7 +28,7 @@ export const ListGroup: React.FC<ListGroupProps> = ({
     >
       {item.title}
     </li>
-  ))
+  ));
 
   return (
     <div className="">
@@ -36,5 +36,5 @@ export const ListGroup: React.FC<ListGroupProps> = ({
         {listGroupElements}
       </ul>
     </div>
-  )
-}
+  );
+};

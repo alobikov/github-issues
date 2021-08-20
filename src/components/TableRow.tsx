@@ -63,8 +63,8 @@ export const TableRow = ({
           {bookmark ? <FaBookmark /> : <FaRegBookmark />}
         </td>
       </tr>
-      <Dialog open={open} onClose={handleDialogClose}>
-        <IssueDetails issue={item} />
+      <Dialog open={open}>
+        <IssueDetails issue={item} onClose={handleDialogClose} />
       </Dialog>
     </>
   );
