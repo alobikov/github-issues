@@ -151,7 +151,6 @@ function App() {
 
   const handlePageSelect = (_: {}, idx: number) => {
     if (activePage === idx) return;
-    console.log(idx);
     setActivePage(idx);
   };
 

@@ -46,7 +46,6 @@ export const useFormControls = () => {
     const isValid =
       Object.values(errors).every((x) => x === "") && formIsValid();
     if (isValid) {
-      console.log(values);
     }
   };
 

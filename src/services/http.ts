@@ -19,12 +19,10 @@ export interface HttpResponse<RESB> {
 }
 
 const withParams = (url: string, params: QueryParams): string => {
-  console.log(url);
   let newUrl = new URL(url);
   Object.entries(params).forEach(([key, value]) => {
     newUrl.searchParams.set(key, value);
   });
-  console.log(newUrl.toString());
   return newUrl.toString();
 };
 
