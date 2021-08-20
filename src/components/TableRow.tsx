@@ -1,10 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import cn from "classnames";
-import { TypeLabel } from "./TypeLabel";
 import { IssueDataFromServer } from "../types/issue";
+import { IssueDetails } from "./IssueDetails";
+import { TypeLabel } from "./TypeLabel";
 import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 import { Dialog } from "@material-ui/core";
-import { IssueDetails } from "./IssueDetails";
 
 interface TableRowProps {
   idx: number;
@@ -13,12 +13,12 @@ interface TableRowProps {
   toggleBookmark: (id: string) => void;
 }
 
-export const TableRow = ({
+export const TableRow: React.FC<TableRowProps> = ({
   idx,
   item,
   bookmark,
   toggleBookmark,
-}: TableRowProps) => {
+}) => {
   const [open, setOpen] = useState(false);
 
   const handleDialogOpen = () => {

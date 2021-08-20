@@ -1,7 +1,7 @@
 import React from "react";
+import { TableRow } from "./TableRow";
 import { IssueDataFromServer } from "../types/issue";
 import { BookmarksType } from "../types/types";
-import { TableRow } from "./TableRow";
 
 interface TableBodyProps {
   items: IssueDataFromServer[];

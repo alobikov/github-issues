@@ -9,6 +9,7 @@ interface IItem {
 interface ListGroupProps {
   items: IItem[];
   selectedItem: string;
+  className: string;
   onSelect(selection: string): void;
 }
 
@@ -16,7 +17,8 @@ export const ListGroup: React.FC<ListGroupProps> = ({
   items,
   selectedItem,
   onSelect,
-}): JSX.Element => {
+  className,
+}) => {
   const listGroupElements = items.map((item) => (
     <li
       onClick={() => onSelect(item.state)}
@@ -31,7 +33,7 @@ export const ListGroup: React.FC<ListGroupProps> = ({
   ));
 
   return (
-    <div className="">
+    <div className={className}>
       <ul className="border-2 border-b-0 border-gray-300">
         {listGroupElements}
       </ul>

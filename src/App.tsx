@@ -167,34 +167,30 @@ function App() {
 
   return (
     <div className="px-4">
-      <header>
-        <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
-          Github Repository Issues Viewer
-        </h1>
-      </header>
-      <InputForm onChange={handleRepoInput} disabled={loading} />
-      {repositoryValid ? (
-        <h2 className="mb-3 mt-1">&nbsp;</h2>
-      ) : (
-        <h2 className="text-red-500 text-center mb-3 mt-1">
-          Not valid Github repository!
-        </h2>
-      )}
+      <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
+        Github Repository Issues Viewer
+      </h1>
+
+      <InputForm
+        onChange={handleRepoInput}
+        disabled={loading}
+        repositoryValid={repositoryValid}
+      />
+
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-2">
-          <ListGroup
-            items={filterGroupItems}
-            onSelect={handleGroupSelect}
-            selectedItem={issueStateFilter}
-          />
-        </div>
+        <ListGroup
+          items={filterGroupItems}
+          onSelect={handleGroupSelect}
+          selectedItem={issueStateFilter}
+          className="col-span-2"
+        />
 
         <div className="col-span-10">
           <table className="w-full">
             <TableHeader
-              onSort={handleSort}
               sortColumn={sortColumnParams}
               items={sortGroupItems}
+              onSort={handleSort}
             />
             {!loading && repositoryValid && (
               <TableBody

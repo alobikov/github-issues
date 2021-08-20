@@ -2,7 +2,7 @@ import React from "react";
 import { Chip } from "@material-ui/core";
 
 interface TypeLabelProps {
-  type?: {};
+  type: {} | undefined;
 }
 
 export const TypeLabel: React.FC<TypeLabelProps> = ({ type }) => {
