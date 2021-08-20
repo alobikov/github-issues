@@ -1,5 +1,5 @@
 import React from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown from "markdown-to-jsx";
 import { IssueDataFromServer } from "../types/issue";
 import { Button } from "@material-ui/core";
 

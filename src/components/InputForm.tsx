@@ -41,6 +41,7 @@ export const InputForm = ({ onChange, disabled }: OrgRepoInputFormProps) => {
               onChange={handleInputValue}
               name={inputFieldValue.name}
               label={inputFieldValue.label}
+              aria-label={inputFieldValue.label}
               autoComplete="none"
               {...(errors[inputFieldValue.name] && {
                 error: true,
