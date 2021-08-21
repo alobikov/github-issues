@@ -1,4 +1,4 @@
-import { ISortColumn } from "../App";
+import { ISortColumn } from "../components/TableHeader";
 import { IssueDataFromServer } from "../types/issue";
 
 type SortType = "created_at" | "updated_at" | "comments";

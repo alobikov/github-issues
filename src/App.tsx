@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { ListGroup } from "./components/ListGroup";
-import { TableHeader } from "./components/TableHeader";
+import { ISortColumn, TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
 import { IssueDataFromServer } from "./types/issue";
@@ -13,6 +13,8 @@ import { LinearProgress } from "@material-ui/core";
 import { loadFromStorage, saveToStorage } from "./services/localStorage";
 import { InputForm } from "./components/InputForm";
 import { checkRepository } from "./services/reposData";
+import { Provider } from "react-redux";
+import store from "./store/configureStore";
 
 const filterGroupItems = [
   { title: "All", state: "all" },
@@ -21,35 +23,18 @@ const filterGroupItems = [
   { title: "Bookmarked", state: "bookmarked" },
 ];
 
-const sortGroupItems = [
-  { key: "title", title: "Title" },
-  { key: "author", title: "Author" },
-  { sort: "created", title: "Created At" },
-  { sort: "updated", title: "Updated At" },
-  { sort: "comments", title: "Comments" },
-  { key: "bookmark", title: "" },
-];
-
-type SortKeyType = "created" | "updated" | "comments";
-
-export interface ISortColumn {
-  sort: SortKeyType;
-  direction: "asc" | "desc";
-}
-
 function App() {
   const [loading, setLoading] = useState(false);
   const [issueStateFilter, setIssueStateFilter] = useState("all");
-  const [sortColumnParams, setSortColumnParams] = useState<ISortColumn>({
-    sort: "created",
-    direction: "desc",
-  });
   const [activePage, setActivePage] = useState(1);
   const [pageIssues, setPageIssues] = useState<IssueDataFromServer[] | []>([]);
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
   const [lastPage, setLastPage] = useState<number>(1);
   const [repository, setRepository] = useState<IRepository | null>(null);
   const [repositoryValid, setRepositoryValid] = useState(true);
+
+  const sortColumnParams: ISortColumn = { sort: "created", direction: "asc" };
+  const setSortColumnParams = ({}) => {};
 
   const createPageOfBookmarks = () => {
     if (!repository) return;
@@ -139,16 +124,6 @@ function App() {
     setActivePage(1);
   };
 
-  const handleSort = (sort: SortKeyType) => {
-    setActivePage(1);
-    if (sort === sortColumnParams.sort)
-      return setSortColumnParams({
-        ...sortColumnParams,
-        direction: sortColumnParams.direction === "asc" ? "desc" : "asc",
-      });
-    setSortColumnParams({ sort, direction: "desc" });
-  };
-
   const handlePageSelect = (_: {}, idx: number) => {
     if (activePage === idx) return;
     setActivePage(idx);
@@ -161,63 +136,53 @@ function App() {
     } else setBookmarks({ ...bookmarks, [issueNumber]: true });
   };
 
-  const handleRepoInput = ({ repo, org }: { repo: string; org: string }) => {
-    setRepository({ name: repo, org });
-  };
-
   return (
-    <div className="px-4">
-      <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
-        Github Repository Issues Viewer
-      </h1>
+    <Provider store={store}>
+      <div className="px-4">
+        <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
+          Github Repository Issues Viewer
+        </h1>
 
-      <InputForm
-        onChange={handleRepoInput}
-        disabled={loading}
-        repositoryValid={repositoryValid}
-      />
+        <InputForm disabled={loading} repositoryValid={repositoryValid} />
 
-      <div className="grid grid-cols-12 gap-4">
-        <ListGroup
-          items={filterGroupItems}
-          onSelect={handleGroupSelect}
-          selectedItem={issueStateFilter}
-          className="col-span-2"
-        />
+        <div className="grid grid-cols-12 gap-4">
+          <ListGroup
+            items={filterGroupItems}
+            onSelect={handleGroupSelect}
+            selectedItem={issueStateFilter}
+            className="col-span-2"
+          />
 
-        <div className="col-span-10">
-          <table className="w-full">
-            <TableHeader
-              sortColumn={sortColumnParams}
-              items={sortGroupItems}
-              onSort={handleSort}
-            />
+          <div className="col-span-10">
+            <table className="w-full">
+              <TableHeader />
+              {!loading && repositoryValid && (
+                <TableBody
+                  items={pageIssues}
+                  bookmarks={bookmarks}
+                  toggleBookmark={handleToggleBookmark}
+                />
+              )}
+            </table>
+
+            {loading && (
+              <div className="pt-6">
+                <LinearProgress />
+              </div>
+            )}
+
             {!loading && repositoryValid && (
-              <TableBody
-                items={pageIssues}
-                bookmarks={bookmarks}
-                toggleBookmark={handleToggleBookmark}
+              <Paginator
+                count={lastPage}
+                active={activePage}
+                onChange={handlePageSelect}
+                className="pt-3"
               />
             )}
-          </table>
-
-          {loading && (
-            <div className="pt-6">
-              <LinearProgress />
-            </div>
-          )}
-
-          {!loading && repositoryValid && (
-            <Paginator
-              count={lastPage}
-              active={activePage}
-              onChange={handlePageSelect}
-              className="pt-3"
-            />
-          )}
+          </div>
         </div>
       </div>
-    </div>
+    </Provider>
   );
 }
 

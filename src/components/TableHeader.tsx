@@ -1,23 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import cn from "classnames";
 import { FaCaretDown, FaCaretUp } from "react-icons/fa";
+import { getIssues } from "../store/issues";
 
-interface ISortColumn {
-  sort: string;
+type SortKeyType = "created" | "updated" | "comments";
+
+export interface ISortColumn {
+  sort: SortKeyType;
   direction: "asc" | "desc";
 }
 
-interface SortingBarProps {
-  items: { sort?: string; title: string; key?: string }[];
-  sortColumn: ISortColumn;
-  onSort(path: string): void;
-}
+const headerItems = [
+  { key: "title", title: "Title" },
+  { key: "author", title: "Author" },
+  { sort: "created", title: "Created At" },
+  { sort: "updated", title: "Updated At" },
+  { sort: "comments", title: "Comments" },
+  { key: "bookmark", title: "" },
+];
 
-export const TableHeader: React.FC<SortingBarProps> = ({
-  items,
-  sortColumn,
-  onSort,
-}) => {
+export const TableHeader: React.FC = () => {
+  const dispatch = useDispatch();
+  const [sortColumn, setSortColumn] = useState<ISortColumn>({
+    sort: "created",
+    direction: "desc",
+  });
+
   const sortDirectionIcon = (sort: string, sortColumn: ISortColumn) => {
     if (sort !== sortColumn.sort) return <span className="p-2"></span>;
     return sortColumn.direction === "desc" ? (
@@ -27,15 +36,27 @@ export const TableHeader: React.FC<SortingBarProps> = ({
     );
   };
 
-  const thElements = items.map((item) => (
+  const handleSort = (sort: SortKeyType) => {
+    if (sort === sortColumn.sort) {
+      setSortColumn({
+        ...sortColumn,
+        direction: sortColumn.direction === "asc" ? "desc" : "asc",
+      });
+    } else {
+      setSortColumn({ sort, direction: "desc" });
+    }
+    dispatch(getIssues());
+  };
+
+  const th_Elements = headerItems.map((item) => (
     <th
-      className={cn("px-2 py-3 cursor-pointer bg-gray-300", {
-        "hover:bg-gray-100": item.sort,
+      className={cn("px-2 py-3 bg-gray-300", {
+        "hover:bg-gray-400 cursor-pointer": item.sort,
       })}
       style={{}}
       key={item.sort || item.key}
       onClick={() => {
-        if (item.sort) return onSort(item.sort);
+        if (item.sort) return handleSort(item.sort as SortKeyType);
       }}
     >
       <span className="whitespace-nowrap">
@@ -47,7 +68,7 @@ export const TableHeader: React.FC<SortingBarProps> = ({
 
   return (
     <thead>
-      <tr>{thElements}</tr>
+      <tr>{th_Elements}</tr>
     </thead>
   );
 };

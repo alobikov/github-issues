@@ -1,11 +1,12 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { setRepository } from "../store/repository";
 import { TextField, Button } from "@material-ui/core";
 import { useFormControls } from "../utils/hooks";
 
 interface InputFormProps {
   disabled: boolean;
   repositoryValid: boolean;
-  onChange({ repo, org }: { repo: string; org: string }): void;
 }
 
 const inputFieldValues = [
@@ -22,16 +23,15 @@ const inputFieldValues = [
 ];
 
 export const InputForm: React.FC<InputFormProps> = ({
-  onChange,
   repositoryValid,
   disabled,
 }) => {
-  const { values, handleInputValue, handleFormSubmit, formIsValid, errors } =
-    useFormControls();
+  const dispatch = useDispatch();
+  const { values, handleInputValue, formIsValid, errors } = useFormControls();
 
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    onChange(values);
+    dispatch(setRepository({ name: values.repo, org: values.org }));
   };
 
   return (
