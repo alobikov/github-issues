@@ -1,4 +1,5 @@
-###Github Repository Issues Viewer
+### Github Repository Issues Viewer
+
 This is naive implementation without use of global store and without Router. The state is hold in root component and spread to childs via props.
 
 REST API endpoints used in the application:
@@ -24,7 +25,7 @@ Issues can be in sorted asccending or descending order by:
 
 Version 3 of GitHub API treats pool requests as issues. As result a response on request on '/issues' returns aggrigated list of pull_requests and issues. When presented on the screen in the table of issues a label (pr) or (issue) added to title of an item helps to distiguish what is which.
 
-####Todo
+#### Todo
 
 - add Redux
 - add Router
