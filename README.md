@@ -9,7 +9,7 @@ https://api.github.com/repos/:organization/:repository/issues/:id
 Response on '/issues' is paginated. Information about last page number is located in Link header.
 
 Application doesn't authorize with github and so able only to retrive data from public repositories.
-Bookmarked issue numbers are being saved in localStorage. Next time you open the same repository bookmarks made earlier are being restored.
+Bookmarked issue numbers are being saved in localStorage. Next time you open the same repository all made earlier bookmars are being restored.
 
 Issues can be filtered by following creterias:
 
