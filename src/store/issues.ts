@@ -9,10 +9,6 @@ const initialState: IInitialState = {
   issues: [],
 };
 
-export const reducer = (state = initialState, action: any) => {
-  return state;
-};
-
 const slice = createSlice({
   name: "issues",
   initialState,

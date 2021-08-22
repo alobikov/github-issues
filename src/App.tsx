@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { ListGroup } from "./components/ListGroup";
+import { FilterGroup } from "./components/FilterGroup";
 import { ISortColumn, TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
@@ -16,25 +16,19 @@ import { checkRepository } from "./services/reposData";
 import { Provider } from "react-redux";
 import store from "./store/configureStore";
 
-const filterGroupItems = [
-  { title: "All", state: "all" },
-  { title: "Open", state: "open" },
-  { title: "Closed", state: "closed" },
-  { title: "Bookmarked", state: "bookmarked" },
-];
-
 function App() {
   const [loading, setLoading] = useState(false);
-  const [issueStateFilter, setIssueStateFilter] = useState("all");
   const [activePage, setActivePage] = useState(1);
   const [pageIssues, setPageIssues] = useState<IssueDataFromServer[] | []>([]);
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
   const [lastPage, setLastPage] = useState<number>(1);
   const [repository, setRepository] = useState<IRepository | null>(null);
   const [repositoryValid, setRepositoryValid] = useState(true);
-
+  // TODO temp substitution
   const sortColumnParams: ISortColumn = { sort: "created", direction: "asc" };
   const setSortColumnParams = ({}) => {};
+  let issueStateFilter = "all";
+  const setIssueStateFilter = (str: string) => {};
 
   const createPageOfBookmarks = () => {
     if (!repository) return;
@@ -146,12 +140,7 @@ function App() {
         <InputForm disabled={loading} repositoryValid={repositoryValid} />
 
         <div className="grid grid-cols-12 gap-4">
-          <ListGroup
-            items={filterGroupItems}
-            onSelect={handleGroupSelect}
-            selectedItem={issueStateFilter}
-            className="col-span-2"
-          />
+          <FilterGroup className="col-span-2" />
 
           <div className="col-span-10">
             <table className="w-full">
@@ -171,14 +160,8 @@ function App() {
               </div>
             )}
 
-            {!loading && repositoryValid && (
-              <Paginator
-                count={lastPage}
-                active={activePage}
-                onChange={handlePageSelect}
-                className="pt-3"
-              />
-            )}
+            <Paginator className="pt-3" />
+            {!loading && repositoryValid && "3"}
           </div>
         </div>
       </div>

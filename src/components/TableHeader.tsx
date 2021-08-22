@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import cn from "classnames";
 import { FaCaretDown, FaCaretUp } from "react-icons/fa";
 import { getIssues } from "../store/issues";
+import { setSortColumn } from "../store/sortColumn";
+import { RootState } from "../store/configureStore";
 
 type SortKeyType = "created" | "updated" | "comments";
 
@@ -22,10 +24,7 @@ const headerItems = [
 
 export const TableHeader: React.FC = () => {
   const dispatch = useDispatch();
-  const [sortColumn, setSortColumn] = useState<ISortColumn>({
-    sort: "created",
-    direction: "desc",
-  });
+  const sortColumn = useSelector((state: RootState) => state.sortColumn);
 
   const sortDirectionIcon = (sort: string, sortColumn: ISortColumn) => {
     if (sort !== sortColumn.sort) return <span className="p-2"></span>;
@@ -38,14 +37,16 @@ export const TableHeader: React.FC = () => {
 
   const handleSort = (sort: SortKeyType) => {
     if (sort === sortColumn.sort) {
-      setSortColumn({
-        ...sortColumn,
-        direction: sortColumn.direction === "asc" ? "desc" : "asc",
-      });
+      const direction = sortColumn.direction === "asc" ? "desc" : "asc";
+      dispatch(
+        setSortColumn({
+          ...sortColumn,
+          direction,
+        })
+      );
     } else {
-      setSortColumn({ sort, direction: "desc" });
+      dispatch(setSortColumn({ sort, direction: "desc" }));
     }
-    dispatch(getIssues());
   };
 
   const th_Elements = headerItems.map((item) => (
@@ -53,7 +54,6 @@ export const TableHeader: React.FC = () => {
       className={cn("px-2 py-3 bg-gray-300", {
         "hover:bg-gray-400 cursor-pointer": item.sort,
       })}
-      style={{}}
       key={item.sort || item.key}
       onClick={() => {
         if (item.sort) return handleSort(item.sort as SortKeyType);
