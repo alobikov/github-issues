@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import cn from "classnames";
 import { setIssuesFilter } from "../store/issuesFilter";
 import { RootState } from "../store/configureStore";
+import { setActivePage } from "../store/paginator";
 
 interface IItem {
   title: string;
@@ -25,9 +26,16 @@ export const FilterGroup: React.FC<FilterGroupProps> = ({ className }) => {
   const selectedFilter = useSelector(
     (state: RootState) => state.issuesFilter.selectedFilter
   );
+
+  const handleChange = (item: IItem) => {
+    if (item.state === selectedFilter) return;
+    dispatch(setIssuesFilter(item.state));
+    dispatch(setActivePage(1));
+  };
+
   const filterGroupElements = filterItems.map((item) => (
     <li
-      onClick={() => dispatch(setIssuesFilter(item.state))}
+      onClick={() => handleChange(item)}
       key={item.state}
       className={cn("p-1 border-b-2 border-gray-300 cursor-pointer", {
         "text-white bg-blue-500": selectedFilter === item.state,

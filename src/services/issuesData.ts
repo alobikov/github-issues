@@ -4,8 +4,7 @@ import parseLink from "parse-link-header";
 import { PAGE_SIZE } from "../config/appSettings";
 
 export interface IRepository {
-  name: string;
-  org: string;
+  full_name: string;
   repositoryValid: boolean;
 }
 
@@ -17,10 +16,10 @@ const extractLastPage = (headers: Headers): number => {
 };
 
 export const getIssues = async (
-  repo: IRepository,
+  repoFullName: string,
   params: QueryParams
 ): Promise<IssuesData | null> => {
-  const path = `/repos/${repo.org}/${repo.name}/issues`;
+  const path = `/repos/${repoFullName}/issues`;
   const extendedParams = { ...params, per_page: PAGE_SIZE.toString() };
   const result = await http<IssueDataFromServer[]>({
     path,
@@ -37,10 +36,10 @@ export const getIssues = async (
 };
 
 export const getIssueById = async (
-  repo: IRepository,
+  repoFullName: string,
   id: string
 ): Promise<IssueDataFromServer | null> => {
-  const path = `/repos/${repo.org}/${repo.name}/issues/${id}`;
+  const path = `/repos/${repoFullName}/issues/${id}`;
   const result = await http<IssueDataFromServer>({ path });
   if (result.ok && result.body) {
     return result.body;
@@ -49,10 +48,10 @@ export const getIssueById = async (
   }
 };
 
-export const getIssuesByIds = async (repo: IRepository, ids: string[]) => {
+export const getIssuesByIds = async (repoFullName: string, ids: string[]) => {
   return Promise.all(
     ids.map(async (id) => {
-      const data = await getIssueById(repo, id);
+      const data = await getIssueById(repoFullName, id);
       return data as IIssue;
     })
   );

@@ -11,8 +11,8 @@ interface PaginatorProps {
 
 export const Paginator: React.FC<PaginatorProps> = ({ className }) => {
   const dispatch = useDispatch();
-  const activePage = useSelector(
-    (state: RootState) => state.paginator.activePage
+  const { lastPage, activePage } = useSelector(
+    (state: RootState) => state.paginator
   );
   const count = 10;
 
@@ -22,12 +22,12 @@ export const Paginator: React.FC<PaginatorProps> = ({ className }) => {
     dispatch(setActivePage(idx));
   };
 
-  if (count <= 1) return null;
+  if (lastPage <= 1) return null;
   return (
     <div className={cn(className)}>
       <Pagination
         page={activePage}
-        count={count}
+        count={lastPage}
         variant="outlined"
         shape="rounded"
         onChange={handleChange}

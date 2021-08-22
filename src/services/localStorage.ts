@@ -1,11 +1,10 @@
 import { IRepository } from "./issuesData";
-import { repoToPath } from "../utils/repoToPath";
 
-export const saveToStorage = (repository: IRepository, ids: string[]) => {
-  localStorage.setItem(repoToPath(repository), ids.toString());
+export const saveToStorage = (repoFullName: string, ids: string[]) => {
+  localStorage.setItem(repoFullName, ids.toString());
 };
 
-export const loadFromStorage = (repository: IRepository): string[] | null => {
-  const result = localStorage.getItem(repoToPath(repository));
+export const loadFromStorage = (repoFullName: string): string[] | null => {
+  const result = localStorage.getItem(repoFullName);
   return result ? result.split(",") : null;
 };

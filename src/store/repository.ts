@@ -1,10 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { act } from "react-dom/test-utils";
 import { IRepository } from "../services/issuesData";
 
 const initialState: IRepository = {
-  name: "",
-  org: "",
+  full_name: "",
   repositoryValid: true,
 };
 
@@ -17,14 +15,20 @@ const slice = createSlice({
   initialState,
   reducers: {
     setRepository: (state, action) => {
-      Object.assign(state, action.payload);
+      state.full_name = action.payload.full_name;
+      state.repositoryValid = true;
     },
 
     setRepositoryValid: (state, action) => {
-      state.repositoryValid = action.payload;
+      state.repositoryValid = true;
+    },
+
+    setRepositoryInvalid: (state, action) => {
+      state.repositoryValid = false;
     },
   },
 });
 
-export const { setRepository } = slice.actions;
+export const { setRepository, setRepositoryValid, setRepositoryInvalid } =
+  slice.actions;
 export default slice.reducer;

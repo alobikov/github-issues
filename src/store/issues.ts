@@ -2,20 +2,22 @@ import { createSlice } from "@reduxjs/toolkit";
 import { IssueDataFromServer } from "../types/issue";
 
 interface IInitialState {
-  issues: IssueDataFromServer[];
+  list: IssueDataFromServer[];
 }
 
 const initialState: IInitialState = {
-  issues: [],
+  list: [],
 };
 
 const slice = createSlice({
   name: "issues",
   initialState,
   reducers: {
-    getIssues: (state) => {},
+    issuesReceived: (issues, action) => {
+      issues.list = action.payload;
+    },
   },
 });
 
-export const { getIssues } = slice.actions;
+export const { issuesReceived } = slice.actions;
 export default slice.reducer;

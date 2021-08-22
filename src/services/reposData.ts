@@ -5,8 +5,10 @@ export interface RepoDataFromServer {
   message?: string;
 }
 
-export const checkRepository = async (repo: IRepository): Promise<boolean> => {
-  const path = `/repos/${repo.org}/${repo.name}`;
+export const checkRepository = async (
+  repoFullName: string
+): Promise<boolean> => {
+  const path = `/repos/${repoFullName}`;
   const result = await http<RepoDataFromServer>({ path, skipError: true });
   if (result.ok && result.body) {
     return true;

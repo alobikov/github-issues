@@ -5,7 +5,7 @@ import { ISortColumn, TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
 import { IssueDataFromServer } from "./types/issue";
-import { getIssues, getIssuesByIds, IRepository } from "./services/issuesData";
+import { getIssues, getIssuesByIds } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
 import { sortBy } from "./utils/sort";
 import { BookmarksType } from "./types/types";
@@ -13,33 +13,43 @@ import { LinearProgress } from "@material-ui/core";
 import { loadFromStorage, saveToStorage } from "./services/localStorage";
 import { InputForm } from "./components/InputForm";
 import { checkRepository } from "./services/reposData";
-import { Provider } from "react-redux";
-import store from "./store/configureStore";
+import { Provider, useSelector, useDispatch } from "react-redux";
+import store, { RootState } from "./store/configureStore";
+import { apiCallBegan } from "./store/middleware/api";
+import { issuesReceived } from "./store/issues";
+import { addQueryParams, makeIssuesUrl } from "./utils/url";
+import { setActivePage } from "./store/paginator";
+import { setIssuesFilter } from "./store/issuesFilter";
+import { setSortColumn } from "./store/sortColumn";
 
 function App() {
   const [loading, setLoading] = useState(false);
-  const [activePage, setActivePage] = useState(1);
-  const [pageIssues, setPageIssues] = useState<IssueDataFromServer[] | []>([]);
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
-  const [lastPage, setLastPage] = useState<number>(1);
-  const [repository, setRepository] = useState<IRepository | null>(null);
-  const [repositoryValid, setRepositoryValid] = useState(true);
-  // TODO temp substitution
-  const sortColumnParams: ISortColumn = { sort: "created", direction: "asc" };
-  const setSortColumnParams = ({}) => {};
-  let issueStateFilter = "all";
-  const setIssueStateFilter = (str: string) => {};
+  const dispatch = useDispatch();
+  const { repositoryValid, full_name: repositoryFullName } = useSelector(
+    (state: RootState) => state.repository
+  );
+  const pageIssues = useSelector((state: RootState) => state.issues.list);
+  const { activePage } = useSelector((state: RootState) => state.paginator);
+  const { selectedFilter } = useSelector(
+    (state: RootState) => state.issuesFilter
+  );
+  const sortColumnParams = useSelector((state: RootState) => state.sortColumn);
 
+  // TODO temp substitution
+  const setPageIssues = (issues: any) => {};
+  const setIssueStateFilter = (str: string) => {};
+  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   const createPageOfBookmarks = () => {
-    if (!repository) return;
+    if (!repositoryFullName) return;
 
     const ids = Object.keys(bookmarks);
 
     setLoading(true);
-    getIssuesByIds(repository, ids)
+    getIssuesByIds(repositoryFullName, ids)
       .then((result) => {
-        const pageCount = Math.ceil(result.length / PAGE_SIZE);
-        setLastPage(pageCount);
+        // const pageCount = Math.ceil(result.length / PAGE_SIZE);
+        // setLastPage(pageCount);
         const sortedIssues = sortBy(result, sortColumnParams);
         const startIndex = (activePage - 1) * PAGE_SIZE;
         const pageSlice = sortedIssues.slice(
@@ -53,74 +63,61 @@ function App() {
   };
 
   const createPage = () => {
-    if (!repository) return;
+    if (!repositoryFullName) return;
 
     const params = {
       page: activePage.toString(),
-      state: issueStateFilter,
+      state: selectedFilter,
+      per_page: PAGE_SIZE,
       ...sortColumnParams,
     };
 
-    setLoading(true);
-    getIssues(repository, params)
-      .then((result) => {
-        if (result) {
-          const { issues, lastPage } = result;
-          setLastPage(Number(lastPage));
-          setPageIssues(issues);
-        }
+    let fullUrl = makeIssuesUrl(repositoryFullName);
+    fullUrl = addQueryParams(fullUrl, params);
+    console.log(fullUrl);
+
+    dispatch(
+      apiCallBegan({
+        url: fullUrl,
+        onSuccess: issuesReceived.type,
       })
-      .catch((error: Error) => console.error(error.message))
-      .finally(() => setLoading(false));
+    );
   };
 
   useEffect(() => {
-    if (!repository || !repositoryValid) return;
-    issueStateFilter === "bookmarked" ? createPageOfBookmarks() : createPage();
-  }, [activePage, issueStateFilter, sortColumnParams]);
+    console.log("active page changed");
+    if (!repositoryFullName || !repositoryValid) return;
+    selectedFilter === "bookmarked" ? createPageOfBookmarks() : createPage();
+  }, [activePage, selectedFilter, sortColumnParams]);
 
   // this is effect needed to reflect bookmark changes on "bookmarked"
   useEffect(() => {
-    issueStateFilter === "bookmarked" && createPageOfBookmarks();
-    if (repository) saveToStorage(repository, Object.keys(bookmarks));
+    selectedFilter === "bookmarked" && createPageOfBookmarks();
+    if (repositoryFullName)
+      saveToStorage(repositoryFullName, Object.keys(bookmarks));
   }, [bookmarks]);
 
   useEffect(() => {
-    if (repository) {
-      setLoading(true);
-      checkRepository(repository)
-        .then((result) => {
-          if (result) {
-            setRepositoryValid(true);
-            setIssueStateFilter("all");
-            setActivePage(1);
-            setSortColumnParams({ sort: "created", direction: "desc" });
+    if (repositoryFullName) {
+      dispatch(setActivePage(1));
+      dispatch(setIssuesFilter("all"));
+      dispatch(setSortColumn({ sort: "created", direction: "desc" }));
 
-            const result = loadFromStorage(repository);
-            if (result) {
-              let loadedBookmarks: BookmarksType = {};
-              result.forEach((key: string) => (loadedBookmarks[key] = true));
-              setBookmarks(loadedBookmarks);
-            } else {
-              setBookmarks({});
-            }
-          } else {
-            setRepositoryValid(false);
-          }
-        })
-        .finally(() => setLoading(false));
+      const result = loadFromStorage(repositoryFullName);
+      if (result) {
+        let loadedBookmarks: BookmarksType = {};
+        result.forEach((key: string) => (loadedBookmarks[key] = true));
+        setBookmarks(loadedBookmarks);
+      } else {
+        setBookmarks({});
+      }
     }
-  }, [repository]);
+  }, [repositoryFullName]);
 
   const handleGroupSelect = (selection: string) => {
-    if (issueStateFilter === selection) return;
+    if (selectedFilter === selection) return;
     setIssueStateFilter(selection);
-    setActivePage(1);
-  };
-
-  const handlePageSelect = (_: {}, idx: number) => {
-    if (activePage === idx) return;
-    setActivePage(idx);
+    // setActivePage(1);
   };
 
   const handleToggleBookmark = (issueNumber: string) => {
@@ -131,41 +128,40 @@ function App() {
   };
 
   return (
-    <Provider store={store}>
-      <div className="px-4">
-        <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
-          Github Repository Issues Viewer
-        </h1>
+    <div className="px-4">
+      <h1 className="text-red-800 text-center font-bold p-4 mb-3 text-2xl">
+        Github Repository Issues Viewer
+      </h1>
 
-        <InputForm disabled={loading} repositoryValid={repositoryValid} />
+      <InputForm disabled={loading} />
 
-        <div className="grid grid-cols-12 gap-4">
-          <FilterGroup className="col-span-2" />
+      <div className="grid grid-cols-12 gap-4">
+        <FilterGroup className="col-span-2" />
 
-          <div className="col-span-10">
-            <table className="w-full">
-              <TableHeader />
-              {!loading && repositoryValid && (
-                <TableBody
-                  items={pageIssues}
-                  bookmarks={bookmarks}
-                  toggleBookmark={handleToggleBookmark}
-                />
-              )}
-            </table>
-
-            {loading && (
-              <div className="pt-6">
-                <LinearProgress />
-              </div>
+        <div className="col-span-10">
+          <table className="w-full">
+            <TableHeader />
+            {!loading && repositoryValid && (
+              <TableBody
+                items={pageIssues}
+                bookmarks={bookmarks}
+                toggleBookmark={handleToggleBookmark}
+              />
             )}
+          </table>
 
+          {loading && (
+            <div className="pt-6">
+              <LinearProgress />
+            </div>
+          )}
+
+          {!loading && pageIssues.length ? (
             <Paginator className="pt-3" />
-            {!loading && repositoryValid && "3"}
-          </div>
+          ) : null}
         </div>
       </div>
-    </Provider>
+    </div>
   );
 }
 

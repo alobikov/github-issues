@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = { activePage: 1 };
+const initialState = { activePage: 1, lastPage: 1 };
 
 const slice = createSlice({
   name: "paginator",
@@ -9,8 +9,11 @@ const slice = createSlice({
     setActivePage: (state, action) => {
       state.activePage = action.payload;
     },
+    setLastPage: (state, action) => {
+      state.lastPage = action.payload;
+    },
   },
 });
 
-export const { setActivePage } = slice.actions;
+export const { setActivePage, setLastPage } = slice.actions;
 export default slice.reducer;

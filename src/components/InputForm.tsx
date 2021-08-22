@@ -1,12 +1,13 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import { setRepository } from "../store/repository";
+import { useDispatch, useSelector } from "react-redux";
 import { TextField, Button } from "@material-ui/core";
 import { useFormControls } from "../utils/hooks";
+import { apiCallBegan } from "../store/middleware/api";
+import { setRepository, setRepositoryInvalid } from "../store/repository";
+import { RootState } from "../store/configureStore";
 
 interface InputFormProps {
   disabled: boolean;
-  repositoryValid: boolean;
 }
 
 const inputFieldValues = [
@@ -22,16 +23,24 @@ const inputFieldValues = [
   },
 ];
 
-export const InputForm: React.FC<InputFormProps> = ({
-  repositoryValid,
-  disabled,
-}) => {
+export const InputForm: React.FC<InputFormProps> = ({ disabled }) => {
   const dispatch = useDispatch();
+  const repositoryValid = useSelector(
+    (state: RootState) => state.repository.repositoryValid
+  );
+
   const { values, handleInputValue, formIsValid, errors } = useFormControls();
 
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    dispatch(setRepository({ name: values.repo, org: values.org }));
+
+    dispatch(
+      apiCallBegan({
+        url: `/repos/${values.org}/${values.repo}`,
+        onSuccess: setRepository.type,
+        onError: setRepositoryInvalid.type,
+      })
+    );
   };
 
   return (

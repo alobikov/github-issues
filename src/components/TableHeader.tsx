@@ -2,15 +2,16 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import cn from "classnames";
 import { FaCaretDown, FaCaretUp } from "react-icons/fa";
-import { getIssues } from "../store/issues";
 import { setSortColumn } from "../store/sortColumn";
 import { RootState } from "../store/configureStore";
+import { setActivePage } from "../store/paginator";
 
 type SortKeyType = "created" | "updated" | "comments";
 
 export interface ISortColumn {
   sort: SortKeyType;
   direction: "asc" | "desc";
+  id?: number;
 }
 
 const headerItems = [
@@ -47,6 +48,7 @@ export const TableHeader: React.FC = () => {
     } else {
       dispatch(setSortColumn({ sort, direction: "desc" }));
     }
+    dispatch(setActivePage(1));
   };
 
   const th_Elements = headerItems.map((item) => (
