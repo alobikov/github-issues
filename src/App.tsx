@@ -1,31 +1,34 @@
-import React, { useState, useEffect } from "react";
-import "./App.css";
+import { useState, useEffect } from "react";
 import { FilterGroup } from "./components/FilterGroup";
-import { ISortColumn, TableHeader } from "./components/TableHeader";
+import { TableHeader } from "./components/TableHeader";
 import { TableBody } from "./components/TableBody";
 import { Paginator } from "./components/Paginator";
-import { IssueDataFromServer } from "./types/issue";
-import { getIssues, getIssuesByIds } from "./services/issuesData";
 import { PAGE_SIZE } from "./config/appSettings";
-import { sortBy } from "./utils/sort";
 import { BookmarksType } from "./types/types";
 import { LinearProgress } from "@material-ui/core";
 import { loadFromStorage, saveToStorage } from "./services/localStorage";
 import { InputForm } from "./components/InputForm";
-import { checkRepository } from "./services/reposData";
-import { Provider, useSelector, useDispatch } from "react-redux";
-import store, { RootState } from "./store/configureStore";
-import { apiCallBegan } from "./store/middleware/api";
-import { issuesReceived } from "./store/issues";
-import { addQueryParams, makeIssuesUrl } from "./utils/url";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "./store/configureStore";
+import { apiCallBegan, apiCallLoopBegan } from "./store/middleware/api";
+import {
+  clearIssues,
+  issuesReceived,
+  issuesRequested,
+  issuesRequestedFailed,
+  oneIssueReceived,
+} from "./store/issues";
+import { addQueryParams, makeIssuesUrl, makeIssuesUrls } from "./utils/url";
 import { setActivePage } from "./store/paginator";
 import { setIssuesFilter } from "./store/issuesFilter";
 import { setSortColumn } from "./store/sortColumn";
+import "./App.css";
 
 function App() {
-  const [loading, setLoading] = useState(false);
-  const [bookmarks, setBookmarks] = useState<BookmarksType>({});
   const dispatch = useDispatch();
+  const [bookmarks, setBookmarks] = useState<BookmarksType>({});
+  // SLECTORS
+  const { loading } = useSelector((state: RootState) => state.issues);
   const { repositoryValid, full_name: repositoryFullName } = useSelector(
     (state: RootState) => state.repository
   );
@@ -36,33 +39,20 @@ function App() {
   );
   const sortColumnParams = useSelector((state: RootState) => state.sortColumn);
 
-  // TODO temp substitution
-  const setPageIssues = (issues: any) => {};
-  const setIssueStateFilter = (str: string) => {};
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  const createPageOfBookmarks = () => {
+  const getPageOfIds = (ids: string[]) => {
     if (!repositoryFullName) return;
-
-    const ids = Object.keys(bookmarks);
-
-    setLoading(true);
-    getIssuesByIds(repositoryFullName, ids)
-      .then((result) => {
-        // const pageCount = Math.ceil(result.length / PAGE_SIZE);
-        // setLastPage(pageCount);
-        const sortedIssues = sortBy(result, sortColumnParams);
-        const startIndex = (activePage - 1) * PAGE_SIZE;
-        const pageSlice = sortedIssues.slice(
-          startIndex,
-          startIndex + PAGE_SIZE
-        );
-        setPageIssues(pageSlice);
+    const urls = makeIssuesUrls(repositoryFullName, ids);
+    dispatch(clearIssues());
+    dispatch(
+      apiCallLoopBegan({
+        urls,
+        onStart: issuesRequested.type,
+        onSuccess: oneIssueReceived.type,
       })
-      .catch((error: Error) => console.error(error.message))
-      .finally(() => setLoading(false));
+    );
   };
 
-  const createPage = () => {
+  const getPageofIssues = () => {
     if (!repositoryFullName) return;
 
     const params = {
@@ -72,14 +62,16 @@ function App() {
       ...sortColumnParams,
     };
 
-    let fullUrl = makeIssuesUrl(repositoryFullName);
-    fullUrl = addQueryParams(fullUrl, params);
-    console.log(fullUrl);
+    let url = makeIssuesUrl(repositoryFullName);
+    url = addQueryParams(url, params);
+    console.log(url);
 
     dispatch(
       apiCallBegan({
-        url: fullUrl,
+        url,
+        onStart: issuesRequested.type,
         onSuccess: issuesReceived.type,
+        onError: issuesRequestedFailed.type,
       })
     );
   };
@@ -87,12 +79,14 @@ function App() {
   useEffect(() => {
     console.log("active page changed");
     if (!repositoryFullName || !repositoryValid) return;
-    selectedFilter === "bookmarked" ? createPageOfBookmarks() : createPage();
+    selectedFilter === "bookmarked"
+      ? getPageOfIds(Object.keys(bookmarks))
+      : getPageofIssues();
   }, [activePage, selectedFilter, sortColumnParams]);
 
   // this is effect needed to reflect bookmark changes on "bookmarked"
   useEffect(() => {
-    selectedFilter === "bookmarked" && createPageOfBookmarks();
+    selectedFilter === "bookmarked" && getPageOfIds(Object.keys(bookmarks));
     if (repositoryFullName)
       saveToStorage(repositoryFullName, Object.keys(bookmarks));
   }, [bookmarks]);
@@ -113,12 +107,6 @@ function App() {
       }
     }
   }, [repositoryFullName]);
-
-  const handleGroupSelect = (selection: string) => {
-    if (selectedFilter === selection) return;
-    setIssueStateFilter(selection);
-    // setActivePage(1);
-  };
 
   const handleToggleBookmark = (issueNumber: string) => {
     if (issueNumber in bookmarks) {

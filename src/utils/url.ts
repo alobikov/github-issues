@@ -1,5 +1,5 @@
-export function makeIssuesUrl(url: string) {
-  return `/repos/${url}/issues`;
+export function makeIssuesUrl(full_name: string) {
+  return `/repos/${full_name}/issues`;
 }
 
 export function addQueryParams(
@@ -12,4 +12,8 @@ export function addQueryParams(
     return a + amp + `${c[0]}=${c[1]}`;
   }, newUrl + "?");
   return newUrl;
+}
+
+export function makeIssuesUrls(full_name: string, ids: string[]) {
+  return ids.map((id: string) => makeIssuesUrl(full_name) + `/${id}`);
 }
