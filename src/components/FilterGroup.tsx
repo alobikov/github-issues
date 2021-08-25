@@ -1,9 +1,9 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import cn from "classnames";
-import { setIssuesFilter } from "../store/issuesFilter";
-import { RootState } from "../store/configureStore";
-import { setActivePage } from "../store/paginator";
+import { setIssuesFilter } from "../store/slices/issuesFilter";
+import { RootState } from "../store";
+import { setActivePage } from "../store/slices/paginator";
 
 interface IItem {
   title: string;

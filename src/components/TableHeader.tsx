@@ -2,9 +2,9 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import cn from "classnames";
 import { FaCaretDown, FaCaretUp } from "react-icons/fa";
-import { setSortColumn } from "../store/sortColumn";
-import { RootState } from "../store/configureStore";
-import { setActivePage } from "../store/paginator";
+import { setSortColumn } from "../store/slices/sortColumn";
+import { RootState } from "../store";
+import { setActivePage } from "../store/slices/paginator";
 
 type SortKeyType = "created" | "updated" | "comments";
 

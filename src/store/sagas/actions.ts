@@ -1,14 +1,14 @@
 import { createAction } from "@reduxjs/toolkit";
 import { ISortColumn } from "../../components/TableHeader";
-import { FilterType } from "../issuesFilter";
+import { FilterType } from "../slices/issuesFilter";
 
-interface IParams extends ISortColumn {
+export interface IParams extends ISortColumn {
   page: string;
   per_page: string;
   state: FilterType;
 }
 
-interface LoadIssuesParams {
+export interface LoadIssuesParams {
   params: IParams;
   repositoryFullName: string;
 }

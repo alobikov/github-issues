@@ -1,11 +1,10 @@
+import { IParams } from "../store/sagas/actions";
+
 export function makeIssuesUrl(full_name: string) {
   return `/repos/${full_name}/issues`;
 }
 
-export function addQueryParams(
-  url: string,
-  params: { [key: string]: string | number }
-) {
+export function addQueryParams(url: string, params: IParams) {
   let newUrl = url;
   newUrl = Object.entries(params).reduce((a, c, i) => {
     const amp = i > 0 ? "&" : "";

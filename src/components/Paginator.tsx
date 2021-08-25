@@ -2,8 +2,8 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import cn from "classnames";
 import Pagination from "@material-ui/lab/Pagination";
-import { RootState } from "../store/configureStore";
-import { setActivePage } from "../store/paginator";
+import { RootState } from "../store";
+import { setActivePage } from "../store/slices/paginator";
 
 interface PaginatorProps {
   className: string;

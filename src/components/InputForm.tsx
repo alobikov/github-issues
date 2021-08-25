@@ -2,9 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField, Button } from "@material-ui/core";
 import { useFormControls } from "../utils/hooks";
-import { apiCallBegan } from "../store/middleware/api";
-import { setRepository, setRepositoryValid } from "../store/repository";
-import { RootState } from "../store/configureStore";
+import { RootState } from "../store";
 import { loadRepos } from "../store/sagas/actions";
 
 interface InputFormProps {

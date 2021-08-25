@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { IssueDataFromServer } from "../types/issue";
+import { IssueDataFromServer } from "../../types/issue";
 
 interface IInitialState {
   list: IssueDataFromServer[];
@@ -15,11 +15,11 @@ const slice = createSlice({
   name: "issues",
   initialState,
   reducers: {
-    issuesRequested: (issues, action) => {
+    issuesRequested: (issues) => {
       issues.loading = true;
     },
 
-    issuesRequestedFailed: (issues, action) => {
+    issuesRequestedFailed: (issues) => {
       issues.loading = false;
     },
 

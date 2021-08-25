@@ -1,8 +1,8 @@
-import issues from "./issues";
-import repository from "./repository";
-import sortColumn from "./sortColumn";
-import issuesFilter from "./issuesFilter";
-import paginator from "./paginator";
+import issues from "./slices/issues";
+import repository from "./slices/repository";
+import sortColumn from "./slices/sortColumn";
+import issuesFilter from "./slices/issuesFilter";
+import paginator from "./slices/paginator";
 import createSagaMiddleware from "redux-saga";
 import { composeWithDevTools } from "redux-devtools-extension";
 import { applyMiddleware, combineReducers, compose, createStore } from "redux";

@@ -18,54 +18,19 @@ export interface HttpResponse<RESB> {
   headers?: Headers;
 }
 
-const withParams = (url: string, params: QueryParams): string => {
-  let newUrl = new URL(url);
-  Object.entries(params).forEach(([key, value]) => {
-    newUrl.searchParams.set(key, value);
-  });
-  return newUrl.toString();
-};
+async function getApi(path: string) {
+  try {
+    const result = await fetch(gitApiUrl + path, {
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/vnd.github.v3+json",
+      },
+    });
+    const json = await result.json();
+    return json;
+  } catch (e) {
+    console.error(e);
+  }
+}
 
-export const http = async <RESB, REQB = undefined>(
-  config: HttpRequest<REQB>
-): Promise<HttpResponse<RESB>> => {
-  let url = `${gitApiUrl}${config.path}`;
-  if (config.params) {
-    url = withParams(url, config.params);
-  }
-  const request = new Request(url, {
-    method: config.method || "get",
-    headers: {
-      "Content-Type": "application/json",
-      accept: "application/vnd.github.v3+json",
-    },
-    body: config.body ? JSON.stringify(config.body) : undefined,
-  });
-  if (config.accessToken) {
-    request.headers.set("authorization", `bearer ${config.accessToken}`);
-  }
-  const response = await fetch(request);
-  if (response.ok) {
-    const body = await response.json();
-    const headers = response.headers;
-    return { ok: response.ok, body, headers };
-  } else {
-    if (config.skipError) {
-      return { ok: false, body: {} as RESB };
-    } else {
-      logError(request, response);
-      return { ok: response.ok };
-    }
-  }
-};
-
-const logError = async (request: Request, response: Response) => {
-  const contentType = response.headers.get("content-type");
-  let body: any;
-  if (contentType && contentType.indexOf("application/json") !== -1) {
-    body = await response.json();
-  } else {
-    body = await response.text();
-  }
-  console.error(`Error requesting ${request.method} ${request.url}`, body);
-};
+export default getApi;

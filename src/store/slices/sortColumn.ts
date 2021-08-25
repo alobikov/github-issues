@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ISortColumn } from "../components/TableHeader";
+import { ISortColumn } from "../../components/TableHeader";
 
 const initialState: ISortColumn = {
   sort: "created",

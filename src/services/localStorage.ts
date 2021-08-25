@@ -1,4 +1,4 @@
-import { IRepository } from "./issuesData";
+import { IRepository } from "../types/types";
 
 export const saveToStorage = (repoFullName: string, ids: string[]) => {
   localStorage.setItem(repoFullName, ids.toString());

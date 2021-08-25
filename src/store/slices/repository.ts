@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { IRepository } from "../services/issuesData";
+import { IRepository } from "../../types/types";
 
 const initialState: IRepository = {
   full_name: "",

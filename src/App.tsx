@@ -9,25 +9,18 @@ import { LinearProgress } from "@material-ui/core";
 import { loadFromStorage, saveToStorage } from "./services/localStorage";
 import { InputForm } from "./components/InputForm";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "./store/configureStore";
-import { apiCallBegan, apiCallLoopBegan } from "./store/middleware/api";
-import {
-  clearIssues,
-  issuesReceived,
-  issuesRequested,
-  issuesRequestedFailed,
-  oneIssueReceived,
-} from "./store/issues";
+import { RootState } from "./store";
 import { loadIssues, loadIssuesByIds } from "./store/sagas/actions";
-import { addQueryParams, makeIssuesUrl, makeIssuesUrls } from "./utils/url";
-import { setActivePage } from "./store/paginator";
-import { setIssuesFilter } from "./store/issuesFilter";
-import { setSortColumn } from "./store/sortColumn";
+import { makeIssuesUrls } from "./utils/url";
+import { setActivePage } from "./store/slices/paginator";
+import { setIssuesFilter } from "./store/slices/issuesFilter";
+import { setSortColumn } from "./store/slices/sortColumn";
 import "./App.css";
 
 function App() {
   const dispatch = useDispatch();
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
+
   // SLECTORS
   const { loading } = useSelector((state: RootState) => state.issues);
   const { repositoryValid, full_name: repositoryFullName } = useSelector(
@@ -43,8 +36,6 @@ function App() {
   const getPageOfIds = (ids: string[]) => {
     if (!repositoryFullName) return;
     const urls = makeIssuesUrls(repositoryFullName, ids);
-    console.log("page of ids", urls);
-    dispatch(clearIssues());
     dispatch(loadIssuesByIds({ urls }));
   };
 
@@ -59,14 +50,6 @@ function App() {
     };
 
     dispatch(loadIssues({ params, repositoryFullName }));
-    // dispatch(
-    //   apiCallBegan({
-    //     url,
-    //     onStart: issuesRequested.type,
-    //     onSuccess: issuesReceived.type,
-    //     onError: issuesRequestedFailed.type,
-    //   })
-    // );
   };
 
   useEffect(() => {
