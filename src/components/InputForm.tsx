@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { TextField, Button } from "@material-ui/core";
 import { useFormControls } from "../utils/hooks";
 import { apiCallBegan } from "../store/middleware/api";
-import { setRepository, setRepositoryInvalid } from "../store/repository";
+import { setRepository, setRepositoryValid } from "../store/repository";
 import { RootState } from "../store/configureStore";
+import { loadRepos } from "../store/sagas/actions";
 
 interface InputFormProps {
   disabled: boolean;
@@ -34,13 +35,7 @@ export const InputForm: React.FC<InputFormProps> = ({ disabled }) => {
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault();
 
-    dispatch(
-      apiCallBegan({
-        url: `/repos/${values.org}/${values.repo}`,
-        onSuccess: setRepository.type,
-        onError: setRepositoryInvalid.type,
-      })
-    );
+    dispatch(loadRepos(`${values.org}/${values.repo}`));
   };
 
   return (

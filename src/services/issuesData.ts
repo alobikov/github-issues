@@ -6,6 +6,7 @@ import { PAGE_SIZE } from "../config/appSettings";
 export interface IRepository {
   full_name: string;
   repositoryValid: boolean;
+  response: string;
 }
 
 const extractLastPage = (headers: Headers): number => {

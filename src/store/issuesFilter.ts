@@ -1,6 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = { selectedFilter: "all" };
+export type FilterType = "all" | "open" | "closed" | "bookmarked";
+export interface IInitialState {
+  selectedFilter: FilterType;
+}
+
+const initialState: IInitialState = { selectedFilter: "all" };
 
 const slice = createSlice({
   name: "issuesFilter",

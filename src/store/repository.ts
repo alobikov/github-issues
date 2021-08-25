@@ -4,6 +4,7 @@ import { IRepository } from "../services/issuesData";
 const initialState: IRepository = {
   full_name: "",
   repositoryValid: true,
+  response: "",
 };
 
 export const reducer = (state = initialState, action: any) => {
@@ -20,15 +21,15 @@ const slice = createSlice({
     },
 
     setRepositoryValid: (state, action) => {
-      state.repositoryValid = true;
+      state.repositoryValid = action.payload;
     },
 
-    setRepositoryInvalid: (state, action) => {
-      state.repositoryValid = false;
+    setRepositoryResponse: (state, action) => {
+      state.response = action.payload;
     },
   },
 });
 
-export const { setRepository, setRepositoryValid, setRepositoryInvalid } =
+export const { setRepository, setRepositoryValid, setRepositoryResponse } =
   slice.actions;
 export default slice.reducer;

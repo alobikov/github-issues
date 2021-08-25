@@ -18,6 +18,7 @@ import {
   issuesRequestedFailed,
   oneIssueReceived,
 } from "./store/issues";
+import { loadIssues, loadIssuesByIds } from "./store/sagas/actions";
 import { addQueryParams, makeIssuesUrl, makeIssuesUrls } from "./utils/url";
 import { setActivePage } from "./store/paginator";
 import { setIssuesFilter } from "./store/issuesFilter";
@@ -42,14 +43,9 @@ function App() {
   const getPageOfIds = (ids: string[]) => {
     if (!repositoryFullName) return;
     const urls = makeIssuesUrls(repositoryFullName, ids);
+    console.log("page of ids", urls);
     dispatch(clearIssues());
-    dispatch(
-      apiCallLoopBegan({
-        urls,
-        onStart: issuesRequested.type,
-        onSuccess: oneIssueReceived.type,
-      })
-    );
+    dispatch(loadIssuesByIds({ urls }));
   };
 
   const getPageofIssues = () => {
@@ -58,26 +54,22 @@ function App() {
     const params = {
       page: activePage.toString(),
       state: selectedFilter,
-      per_page: PAGE_SIZE,
+      per_page: PAGE_SIZE.toString(),
       ...sortColumnParams,
     };
 
-    let url = makeIssuesUrl(repositoryFullName);
-    url = addQueryParams(url, params);
-    console.log(url);
-
-    dispatch(
-      apiCallBegan({
-        url,
-        onStart: issuesRequested.type,
-        onSuccess: issuesReceived.type,
-        onError: issuesRequestedFailed.type,
-      })
-    );
+    dispatch(loadIssues({ params, repositoryFullName }));
+    // dispatch(
+    //   apiCallBegan({
+    //     url,
+    //     onStart: issuesRequested.type,
+    //     onSuccess: issuesReceived.type,
+    //     onError: issuesRequestedFailed.type,
+    //   })
+    // );
   };
 
   useEffect(() => {
-    console.log("active page changed");
     if (!repositoryFullName || !repositoryValid) return;
     selectedFilter === "bookmarked"
       ? getPageOfIds(Object.keys(bookmarks))
