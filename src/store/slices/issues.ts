@@ -19,10 +19,6 @@ const slice = createSlice({
       issues.loading = true;
     },
 
-    issuesRequestedFailed: (issues) => {
-      issues.loading = false;
-    },
-
     issuesReceived: (issues, action) => {
       issues.list = action.payload;
       issues.loading = false;
@@ -47,7 +43,6 @@ export const {
   oneIssueReceived,
   clearIssues,
   issuesRequested,
-  issuesRequestedFailed,
   stopLoading,
 } = slice.actions;
 export default slice.reducer;

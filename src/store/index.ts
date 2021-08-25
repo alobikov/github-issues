@@ -12,7 +12,7 @@ export type RootState = ReturnType<typeof store.getState>;
 
 const sagaMiddleware = createSagaMiddleware();
 
-const reducer = combineReducers({
+export const reducer = combineReducers({
   issues,
   repository,
   sortColumn,
