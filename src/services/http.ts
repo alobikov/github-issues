@@ -19,18 +19,14 @@ export interface HttpResponse<RESB> {
 }
 
 async function getApi(path: string) {
-  try {
-    const result = await fetch(gitApiUrl + path, {
-      headers: {
-        "Content-Type": "application/json",
-        accept: "application/vnd.github.v3+json",
-      },
-    });
-    const json = await result.json();
-    return json;
-  } catch (e) {
-    console.error(e);
-  }
+  const result = await fetch(gitApiUrl + path, {
+    headers: {
+      "Content-Type": "application/json",
+      accept: "application/vnd.github.v3+json",
+    },
+  });
+  const json = await result.json();
+  return json;
 }
 
 export default getApi;

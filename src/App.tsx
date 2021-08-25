@@ -23,9 +23,11 @@ function App() {
 
   // SLECTORS
   const { loading } = useSelector((state: RootState) => state.issues);
-  const { repositoryValid, full_name: repositoryFullName } = useSelector(
-    (state: RootState) => state.repository
-  );
+  const {
+    repositoryValid,
+    response,
+    full_name: repositoryFullName,
+  } = useSelector((state: RootState) => state.repository);
   const pageIssues = useSelector((state: RootState) => state.issues.list);
   const { activePage } = useSelector((state: RootState) => state.paginator);
   const { selectedFilter } = useSelector(
@@ -104,7 +106,7 @@ function App() {
         <div className="col-span-10">
           <table className="w-full">
             <TableHeader />
-            {!loading && repositoryValid && (
+            {!loading && repositoryValid && !response && (
               <TableBody
                 items={pageIssues}
                 bookmarks={bookmarks}

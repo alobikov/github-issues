@@ -24,8 +24,8 @@ const inputFieldValues = [
 
 export const InputForm: React.FC<InputFormProps> = ({ disabled }) => {
   const dispatch = useDispatch();
-  const repositoryValid = useSelector(
-    (state: RootState) => state.repository.repositoryValid
+  const { repositoryValid, response } = useSelector(
+    (state: RootState) => state.repository
   );
 
   const { values, handleInputValue, formIsValid, errors } = useFormControls();
@@ -70,12 +70,10 @@ export const InputForm: React.FC<InputFormProps> = ({ disabled }) => {
           </div>
         </form>
       </div>
-      {repositoryValid ? (
-        <h2 className="mb-3 mt-1">&nbsp;</h2>
+      {!repositoryValid || response ? (
+        <h2 className="text-red-500 text-center mb-3 mt-1">{response}</h2>
       ) : (
-        <h2 className="text-red-500 text-center mb-3 mt-1">
-          Not valid Github repository!
-        </h2>
+        <h2 className="mb-3 mt-1">&nbsp;</h2>
       )}
     </>
   );

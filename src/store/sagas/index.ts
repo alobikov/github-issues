@@ -11,12 +11,20 @@ const actions = { ...repositoryActions, ...issueActions, ...sagaActions };
 
 export function* loadReposData(full_name: string): any {
   const reposPath = `/repos/${full_name}`;
-  const repos = yield call(getApi, reposPath);
-  yield put(actions.setRepositoryValid(!repos.message));
-  if (repos.message) {
-    yield put(actions.setRepositoryResponse(repos.message));
-  } else {
-    yield put(actions.setRepository({ full_name }));
+  try {
+    const repos = yield call(getApi, reposPath);
+    yield put(actions.setRepositoryValid(!repos.message));
+    if (repos.message) {
+      yield put(
+        actions.setRepositoryResponse(`Repository error: ${repos.message}`)
+      );
+    } else {
+      yield put(actions.setRepository({ full_name }));
+      yield put(actions.setRepositoryResponse(""));
+    }
+  } catch (e) {
+    yield put(actions.stopLoading());
+    yield put(actions.setRepositoryResponse(`Network Error: ${e.message}`));
   }
 }
 
@@ -25,13 +33,25 @@ function* loadIssuesData(payload: LoadIssuesParams): any {
   let path = makeIssuesUrl(repositoryFullName);
   path = addQueryParams(path, params);
   yield put(actions.issuesRequested());
-  const issues = yield call(getApi, path);
-  yield put(actions.issuesReceived(issues));
+  try {
+    const issues = yield call(getApi, path);
+    yield put(actions.issuesReceived(issues));
+    yield put(actions.setRepositoryResponse(""));
+  } catch (e) {
+    yield put(actions.stopLoading());
+    yield put(actions.setRepositoryResponse(`Network Error: ${e.message}`));
+  }
 }
 
 function* loadIssue(url: string): any {
-  const issue = yield call(getApi, url);
-  yield put(actions.oneIssueReceived(issue));
+  try {
+    const issue = yield call(getApi, url);
+    yield put(actions.oneIssueReceived(issue));
+    yield put(actions.setRepositoryResponse(""));
+  } catch (e) {
+    yield put(actions.stopLoading());
+    yield put(actions.setRepositoryResponse(`Network Error: ${e.message}`));
+  }
 }
 
 function* loadIssuesByIdsData({ urls }: { urls: string[] }): any {
