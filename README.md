@@ -1,6 +1,8 @@
 ### Github Repository Issues Viewer
 
-This is naive implementation without use of global store and without Router. The state is hold in root component and spread to childs via props.
+Master branch stores the version with redux-saga.
+Redux branch stores veriosn with redux and thunk.
+Redux-less branch store version without global state.
 
 REST API endpoints used in the application:
 https://api.github.com/repos/:organization/:repository
@@ -27,7 +29,5 @@ Version 3 of GitHub API treats pool requests as issues. As result a response on 
 
 #### Todo
 
-- add Redux
 - add Router
-- refactor architecture
 - saturate with unit tests
