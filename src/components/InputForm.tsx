@@ -73,7 +73,9 @@ export const InputForm: React.FC<InputFormProps> = ({ disabled }) => {
       {!repositoryValid || response ? (
         <h2 className="text-red-500 text-center mb-3 mt-1">{response}</h2>
       ) : (
-        <h2 className="mb-3 mt-1">&nbsp;</h2>
+        <h2 data-testid="error-field" className="mb-3 mt-1">
+          &nbsp;
+        </h2>
       )}
     </>
   );
