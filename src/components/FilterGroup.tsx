@@ -28,9 +28,10 @@ export const FilterGroup: React.FC<FilterGroupProps> = ({ className }) => {
   );
 
   const handleChange = (item: IItem) => {
+    console.log("change", item);
     if (item.state === selectedFilter) return;
     dispatch(setIssuesFilter(item.state));
-    dispatch(setActivePage(1));
+    // dispatch(setActivePage(1));
   };
 
   const filterGroupElements = filterItems.map((item) => (
