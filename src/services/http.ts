@@ -26,7 +26,8 @@ async function getApi(path: string) {
     },
   });
   const json = await result.json();
-  return json;
+  const headers = result.headers;
+  return [json, headers];
 }
 
 export default getApi;

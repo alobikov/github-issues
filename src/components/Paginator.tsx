@@ -14,7 +14,6 @@ export const Paginator: React.FC<PaginatorProps> = ({ className }) => {
   const { lastPage, activePage } = useSelector(
     (state: RootState) => state.paginator
   );
-  const count = 10;
 
   const handleChange = (_: any, idx: number) => {
     console.log(idx);

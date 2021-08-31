@@ -21,7 +21,7 @@ function App() {
   const dispatch = useDispatch();
   const [bookmarks, setBookmarks] = useState<BookmarksType>({});
 
-  // SLECTORS
+  // SELECTORS
   const { loading } = useSelector((state: RootState) => state.issues);
   const {
     repositoryValid,
@@ -121,9 +121,7 @@ function App() {
             </div>
           )}
 
-          {!loading && pageIssues.length ? (
-            <Paginator className="pt-3" />
-          ) : null}
+          {true ? <Paginator className="pt-3" /> : null}
         </div>
       </div>
     </div>

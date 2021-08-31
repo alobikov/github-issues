@@ -6,13 +6,20 @@ import { LoadIssuesParams } from "./actions";
 import { makeIssuesUrl, addQueryParams } from "../../utils/url";
 import { PayloadAction } from "@reduxjs/toolkit";
 import getApi from "../../services/http";
+import extractLastPag from "../../utils/extractLastPage";
+import * as paginator from "../slices/paginator";
 
-const actions = { ...repositoryActions, ...issueActions, ...sagaActions };
+const actions = {
+  ...repositoryActions,
+  ...issueActions,
+  ...paginator,
+  ...sagaActions,
+};
 
 export function* loadReposData(full_name: string): any {
   const reposPath = `/repos/${full_name}`;
   try {
-    const repos = yield call(getApi, reposPath);
+    const [repos, headers] = yield call(getApi, reposPath);
     yield put(actions.setRepositoryValid(!repos.message));
     if (repos.message) {
       yield put(
@@ -34,7 +41,9 @@ function* loadIssuesData(payload: LoadIssuesParams): any {
   path = addQueryParams(path, params);
   yield put(actions.issuesRequested());
   try {
-    const issues = yield call(getApi, path);
+    const [issues, headers] = yield call(getApi, path);
+    const lastPage = extractLastPag(headers);
+    yield put(actions.setLastPage(lastPage));
     yield put(actions.issuesReceived(issues));
     yield put(actions.setRepositoryResponse(""));
   } catch (e) {
@@ -45,7 +54,7 @@ function* loadIssuesData(payload: LoadIssuesParams): any {
 
 function* loadIssue(url: string): any {
   try {
-    const issue = yield call(getApi, url);
+    const [issue, headers] = yield call(getApi, url);
     yield put(actions.oneIssueReceived(issue));
     yield put(actions.setRepositoryResponse(""));
   } catch (e) {
