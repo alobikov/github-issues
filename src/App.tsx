@@ -12,10 +12,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "./store";
 import { loadIssues, loadIssuesByIds } from "./store/sagas/actions";
 import { makeIssuesUrls } from "./utils/url";
-import { setActivePage } from "./store/slices/paginator";
+import { setActivePage, setLastPage } from "./store/slices/paginator";
 import { setIssuesFilter } from "./store/slices/issuesFilter";
 import { setSortColumn } from "./store/slices/sortColumn";
 import "./App.css";
+import { sortBy } from "./utils/sort";
+import { IssueDataFromServer } from "./types/issue";
 
 function App() {
   const dispatch = useDispatch();
@@ -28,20 +30,29 @@ function App() {
     response,
     full_name: repositoryFullName,
   } = useSelector((state: RootState) => state.repository);
-  const pageIssues = useSelector((state: RootState) => state.issues.list);
+  const issues = useSelector((state: RootState) => state.issues.list);
   const { activePage } = useSelector((state: RootState) => state.paginator);
   const { selectedFilter } = useSelector(
     (state: RootState) => state.issuesFilter
   );
   const sortColumnParams = useSelector((state: RootState) => state.sortColumn);
 
-  const getPageOfIds = (ids: string[]) => {
+  function slicePageAndSort(items: IssueDataFromServer[]) {
+    if (selectedFilter !== "bookmarked") return issues; // sorting and pagination is made by backend
+    const sortedItems = sortBy(items, sortColumnParams);
+    const start = (activePage - 1) * PAGE_SIZE;
+    return sortedItems.slice(start, start + PAGE_SIZE);
+  }
+
+  function sortIssues() {}
+
+  const getPageOfIssuesByIds = (ids: string[]) => {
     if (!repositoryFullName) return;
     const urls = makeIssuesUrls(repositoryFullName, ids);
     dispatch(loadIssuesByIds({ urls }));
   };
 
-  const getPageofIssues = () => {
+  const getPageOfIssues = () => {
     if (!repositoryFullName) return;
 
     const params = {
@@ -56,14 +67,20 @@ function App() {
 
   useEffect(() => {
     if (!repositoryFullName || !repositoryValid) return;
+    selectedFilter === "bookmarked" ? sortIssues() : getPageOfIssues();
+  }, [activePage, sortColumnParams]);
+
+  useEffect(() => {
     selectedFilter === "bookmarked"
-      ? getPageOfIds(Object.keys(bookmarks))
-      : getPageofIssues();
-  }, [activePage, selectedFilter, sortColumnParams]);
+      ? getPageOfIssuesByIds(Object.keys(bookmarks))
+      : getPageOfIssues();
+  }, [selectedFilter]);
 
   // this is effect needed to reflect bookmark changes on "bookmarked"
   useEffect(() => {
-    selectedFilter === "bookmarked" && getPageOfIds(Object.keys(bookmarks));
+    if (!repositoryFullName || !repositoryValid) return;
+    selectedFilter === "bookmarked" &&
+      getPageOfIssuesByIds(Object.keys(bookmarks));
     if (repositoryFullName)
       saveToStorage(repositoryFullName, Object.keys(bookmarks));
   }, [bookmarks]);
@@ -108,7 +125,7 @@ function App() {
             <TableHeader />
             {!loading && repositoryValid && !response && (
               <TableBody
-                items={pageIssues}
+                items={slicePageAndSort(issues)}
                 bookmarks={bookmarks}
                 toggleBookmark={handleToggleBookmark}
               />

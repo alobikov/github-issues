@@ -16,7 +16,6 @@ export const Paginator: React.FC<PaginatorProps> = ({ className }) => {
   );
 
   const handleChange = (_: any, idx: number) => {
-    console.log(idx);
     if (idx === activePage) return;
     dispatch(setActivePage(idx));
   };
