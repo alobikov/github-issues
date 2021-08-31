@@ -63,7 +63,7 @@ export const TableRow: React.FC<TableRowProps> = ({
           {bookmark ? <FaBookmark /> : <FaRegBookmark />}
         </td>
       </tr>
-      <Dialog open={open}>
+      <Dialog open={open} onClose={handleDialogClose}>
         <IssueDetails issue={item} onClose={handleDialogClose} />
       </Dialog>
     </>
