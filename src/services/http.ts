@@ -23,7 +23,6 @@ async function getApi(path: string) {
     headers: {
       "Content-Type": "application/json",
       accept: "application/vnd.github.v3+json",
-      Authorization: "token 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",
     },
   });
   const json = await result.json();
