@@ -1,7 +1,7 @@
 ### Github Repository Issues Viewer
 
-Master branch stores the version with redux-saga.
-Redux branch stores version with redux and thunk.
+Master branch stores the version with redux-saga.\
+Redux branch stores version with redux and thunk.\
 Redux-less branch store version without global state.
 
 REST API endpoints used in the application:
